@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WeatherWise - سامانه هوشمند آب و هوا</title>
+    
+    <!-- Font Awesome (آیکون‌ها) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    
+    <!-- Leaflet (نقشه) -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
+    <!-- Chart.js (نمودار) -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- استایل اصلی -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- هدر -->
+        <header>
+            <div class="header-left">
+                <h1><i class="fas fa-cloud-sun"></i> WeatherWise</h1>
+                <span class="subtitle">پیش‌بینی هوشمند</span>
+            </div>
+            <div class="header-right">
+                <div class="search-box">
+                    <input type="text" id="citySearch" placeholder="جستجوی شهر..." />
+                    <button id="searchBtn"><i class="fas fa-search"></i></button>
+                </div>
+                <div class="lang-selector">
+                    <button class="lang-btn active" data-lang="fa">فا</button>
+                    <button class="lang-btn" data-lang="en">En</button>
+                    <button class="lang-btn" data-lang="es">Es</button>
+                </div>
+            </div>
+        </header>
+
+        <!-- نقشه -->
+        <section id="map-section">
+            <div id="map"></div>
+        </section>
+
+        <!-- وضعیت فعلی -->
+        <section id="current-weather">
+            <div class="current-info">
+                <div class="location-info">
+                    <h2 id="cityName">تهران</h2>
+                    <p id="countryName">ایران</p>
+                </div>
+                <div class="weather-main">
+                    <img id="currentIcon" src="" alt="وضعیت آب و هوا">
+                    <span id="currentTemp">24°C</span>
+                    <span id="currentCondition">آفتابی</span>
+                </div>
+                <div class="weather-details">
+                    <div><i class="fas fa-tint"></i> <span id="humidity">0%</span></div>
+                    <div><i class="fas fa-wind"></i> <span id="windSpeed">0 km/h</span></div>
+                    <div><i class="fas fa-sun"></i> <span id="uvIndex">0</span></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- نمودار دما -->
+        <section id="chart-section">
+            <h2><i class="fas fa-chart-line"></i> <span data-i18n="temperatureChart">نمودار دما</span></h2>
+            <div class="chart-container">
+                <canvas id="tempChart"></canvas>
+            </div>
+        </section>
+
+        <!-- پیش‌بینی ساعتی -->
+        <section id="today">
+            <h2><i class="fas fa-calendar-day"></i> <span data-i18n="today">امروز</span></h2>
+            <div id="today-hours" class="hours-container"></div>
+        </section>
+
+        <section id="tomorrow">
+            <h2><i class="fas fa-calendar-alt"></i> <span data-i18n="tomorrow">فردا</span></h2>
+            <div id="tomorrow-hours" class="hours-container"></div>
+        </section>
+
+        <!-- فوتر -->
+        <footer>
+            <p><span data-i18n="footer">منبع: WeatherAPI.com</span> | WeatherWise v2.0</p>
+        </footer>
+    </div>
+
+    <!-- افکت‌های آب و هوا (باران/آفتاب) -->
+    <div id="weather-effects"></div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <!-- اسکریپت اصلی -->
+    <script src="script.js"></script>
+</body>
+</html>
