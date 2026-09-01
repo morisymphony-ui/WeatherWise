@@ -1,0 +1,3 @@
+    if (forecast && forecast.length > 1){
+        displayWeekly(forecast);
+    }
