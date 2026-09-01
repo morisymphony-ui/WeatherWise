@@ -534,17 +534,17 @@ body.sunset .weekly-card {
     position: absolute;
     width: 2px;
     background: rgba(255, 255, 255, 0.45);
-    animation: rainFall 5s linear infinite 1.5s alternate;
+    animation: rainFall linear infinite 1.5s alternate;
     border-radius: 2px;
 }
 @keyframes rainFall {
     0% {
         transform: translateY(-100vh) rotate(15deg);
-        
+        opacity: 0.6;
     }
     100% {
         transform: translateY(100vh) rotate(15deg);
-        
+        opacity: 0;
     }
 }
 
@@ -558,6 +558,7 @@ body.sunset .weekly-card {
     background: radial-gradient( rgba(255, 217, 111, 0.75), transparent 70%);
     border-radius: 50%;
     animation: pulseGlow 4s ease-in-out infinite;
+    z-index: 1 ;
 }
 @keyframes pulseGlow {
     0%,
