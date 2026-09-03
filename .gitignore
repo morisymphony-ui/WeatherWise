@@ -1,0 +1,17 @@
+.env
+.env.*
+!.env.example
+
+/vendor/
+/old2/
+/oldest/
+
+config.php
+Meow.txt
+
+.vscode/
+.idea/
+
+*.log
+.DS_Store
+Thumbs.db
