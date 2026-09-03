@@ -65,8 +65,13 @@ body.night .search-box input {
     color: #fff;
     border-color: rgba(255, 255, 255, 0.2);
 }
+
+#citySearch::placeholder {
+  color: rgb(172, 172, 172);
+}
+
 body.night .search-box input::placeholder {
-    color: rgba(255, 255, 255, 0.5);
+    color: rgba(255, 255, 255, 0.815);
 }
 body.night .lang-btn {
     border-color: #666;
@@ -171,6 +176,7 @@ body.night .header-clock {
     gap: 12px;
     flex-wrap: wrap;
 }
+
 
 .search-box {
     display: flex;
