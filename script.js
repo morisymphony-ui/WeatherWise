@@ -203,6 +203,47 @@ function setLanguage(lang) {
     }
 }
 
+// ==================== جستجوی هوشمند با Datalist ====================
+const searchInput = document.getElementById('citySearch');
+const datalist = document.getElementById('citySuggestions');
+let searchTimeout = null;
+
+// رویداد تایپ برای دریافت پیشنهادات
+searchInput.addEventListener('input', function() {
+    const query = this.value.trim();
+    if (query.length < 2) {
+        datalist.innerHTML = '';
+        return;
+    }
+    
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(() => {
+        fetchCitySuggestions(query);
+    }, 300);
+});
+
+// تابع دریافت پیشنهادات از سرور
+function fetchCitySuggestions(query) {
+    const url = `backend.php?type=suggest&q=${encodeURIComponent(query)}&lang=${currentLang}`;
+    
+    fetch(url)
+        .then(res => res.json())
+        .then(data => {
+            datalist.innerHTML = '';
+            if (data && data.length > 0) {
+                data.forEach(item => {
+                    const option = document.createElement('option');
+                    option.value = item.name;
+                    option.dataset.lat = item.lat;
+                    option.dataset.lon = item.lon;
+                    option.dataset.country = item.country;
+                    datalist.appendChild(option);
+                });
+            }
+        })
+        .catch(err => console.error('خطا در دریافت پیشنهادات:', err));
+}
+
 //  دریافت موقعیت 
 function getLocation() {
     if (navigator.geolocation) {
@@ -265,6 +306,13 @@ function searchCity() {
     // ارسال به backend برای ترجمه
     fetchWeather(null, null, currentLang, query);
 }
+
+document.getElementById('searchBtn').addEventListener('click', searchCity);
+searchInput.addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        searchCity();
+    }
+});
 
 
 // دریافت داده‌های امروز و فردا

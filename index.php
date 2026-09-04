@@ -36,7 +36,8 @@
 
             <div class="header-right">
                 <div class="search-box">
-                    <input type="text" id="citySearch" placeholder="جستجوی شهر..." />
+                    <input type="text" id="citySearch" list="citySuggestions" placeholder="جستجوی شهر..." autocomplete="off" />
+                    <datalist id="citySuggestions"></datalist>
                     <button id="searchBtn"><i class="fas fa-search"></i></button>
                 </div>
                 <div class="lang-selector">
