@@ -113,6 +113,37 @@ const weatherTranslations = {
     'Snow grains': 'دانه‌های برف',
     'Light snow shower': 'رگبار خفیف برف',
     'Heavy snow shower': 'رگبار سنگین برف',
+    'Blowing snow': 'برف در حال وزیدن',
+    'Blizzard': 'کولاک',
+    'Snowstorm': 'طوفان برف',
+    'Snow': 'برف',
+    'Snow showers': 'رگبار برف',
+    'Heavy snow showers': 'رگبار سنگین برف',
+    'Moderate snow showers': 'رگبار متوسط برف',
+    'Light snow showers': 'رگبار خفیف برف',
+    'Patchy snow nearby': 'برف پراکنده در نزدیکی',
+    'Light snow': 'برف خفیف',
+    'Moderate snow': 'برف متوسط',
+    'Heavy snow': 'برف سنگین',
+    'Patchy light snow': 'برف خفیف پراکنده',
+    'Patchy moderate snow': 'برف متوسط پراکنده',
+    'Patchy heavy snow': 'برف سنگین پراکنده',
+    'Snow grains': 'دانه‌های برف',
+    'Ice pellets': 'دانه‌های یخ',
+    'Light ice pellets': 'دانه‌های یخ خفیف',
+    'Heavy ice pellets': 'دانه‌های یخ سنگین',
+    'Light sleet': 'برف‌آب خفیف',
+    'Moderate or heavy sleet': 'برف‌آب متوسط یا سنگین',
+    'Light sleet showers': 'رگبار خفیف برف‌آب',
+    'Moderate or heavy sleet showers': 'رگبار متوسط یا سنگین برف‌آب',
+    'Light showers of ice pellets': 'رگبار خفیف دانه‌های یخ',
+    'Moderate or heavy showers of ice pellets': 'رگبار متوسط یا سنگین دانه‌های یخ',
+    'Light snow with thunder': 'برف خفیف همراه با رعد',
+    'Moderate or heavy snow with thunder': 'برف متوسط یا سنگین همراه با رعد',
+    'Patchy light snow with thunder': 'برف خفیف پراکنده همراه با رعد',
+    'Moderate or heavy snow with thunder': 'برف متوسط یا سنگین همراه با رعد',
+    'Smoky haze': 'دودآلود',
+    'Thunderstorm': 'رعد و برق',
 };
 
 //  دیکشنری آیکون‌های جایگزین 
@@ -179,6 +210,7 @@ let map = null;
 let mapMarker = null;
 let rainInterval = null;
 let clockInterval = null;
+let weatherRefreshInterval = null;
 
 //  DOM Elements 
 const DOM = {
@@ -348,16 +380,24 @@ document.addEventListener('DOMContentLoaded', function() {
     getLocation();
     DOM.citySearch.placeholder = translations.fa.searchPlaceholder;
 
-    // بروزرسانی ساعت هر دقیقه
+    // ساعت هر ثانیه زنده به‌روزرسانی میشه (کاملاً سمت کلاینت، بدون فراخوانی API)
     if (clockInterval) clearInterval(clockInterval);
-    clockInterval = setInterval(() => {
-        // جای این‌جا برای منطق آینده‌ی به‌روزرسانی ساعت نگه داشته شده
-    }, 60000);
+    clockInterval = setInterval(tickClock, 1000);
+
+    // داده‌ی واقعی آب‌وهوا هر ۵ دقیقه یک‌بار در پس‌زمینه رفرش میشه.
+    // عمداً هر ثانیه رفرش نمیشه چون دمای واقعی این‌قدر سریع تغییر نمی‌کنه
+    // و این کار سهمیه‌ی API رو (به‌خصوص با مشکلات اتصال) خیلی سریع می‌سوزونه.
+    if (weatherRefreshInterval) clearInterval(weatherRefreshInterval);
+    weatherRefreshInterval = setInterval(() => {
+        if (currentCoords) {
+            fetchWeather(currentCoords.lat, currentCoords.lon, currentLang, null, true);
+        }
+    }, 5 * 60 * 1000);
 });
 
 
 // دریافت داده‌های امروز و فردا
-function fetchWeather(lat, lon, lang, city = null) {
+function fetchWeather(lat, lon, lang, city = null, forceRefresh = false) {
     let url = `backend.php?type=weather&lang=${lang}`;
     if (city) {
         url += `&city=${encodeURIComponent(city)}`;
@@ -368,7 +408,7 @@ function fetchWeather(lat, lon, lang, city = null) {
     }
 
     const cacheKey = `weather_${city || `${lat}_${lon}`}_${lang}`;
-    const cached = localStorage.getItem(cacheKey);
+    const cached = forceRefresh ? null : localStorage.getItem(cacheKey);
     if (cached) {
         const data = JSON.parse(cached);
         const age = Date.now() - data.timestamp;
@@ -504,7 +544,7 @@ function displayWeather(data) {
     updateMap(location.lat, location.lon, location.name);
 
     // ساعت محلی و اختلاف
-    updateClock(location.tz_id, location.localtime);
+    updateClock(location.tz_id);
 
     // پیش بینی ساعتی
     if (forecast && forecast.length >= 2) {
@@ -566,40 +606,53 @@ function getWeatherEmoji(conditionText) {
     return '🌤️'; // پیش فرض
 }
 
-//  ساعت و اختلاف زمانی 
-function updateClock(timezone, localtime) {
-    if (!timezone || !localtime) return;
+//  ساعت زنده (تیک هر ثانیه) و اختلاف زمانی 
+let currentTzId = null; // آخرین tz_id دریافت‌شده از API (مثل "Asia/Tehran")
 
-    // استخراج ساعت و دقیقه از localtime (فرمت: "2025-06-15 14:30")
-    const parts = localtime.split(' ');
-    if (parts.length < 2) return;
-    const timePart = parts[1];
-    DOM.localTime.textContent = timePart.substring(0, 5); // HH:MM
+// محاسبه اختلاف یک منطقه زمانی با UTC بر حسب دقیقه، در لحظه‌ی داده‌شده
+// (این روش با تغییر ساعت تابستانی/زمستانی هم به‌درستی سازگار است)
+function getTzOffsetMinutes(tz, date) {
+    const dtf = new Intl.DateTimeFormat('en-US', {
+        timeZone: tz, hour12: false,
+        year: 'numeric', month: '2-digit', day: '2-digit',
+        hour: '2-digit', minute: '2-digit', second: '2-digit'
+    });
+    const parts = dtf.formatToParts(date).reduce((acc, p) => {
+        if (p.type !== 'literal') acc[p.type] = p.value;
+        return acc;
+    }, {});
+    const asUTC = Date.UTC(parts.year, parts.month - 1, parts.day, parts.hour, parts.minute, parts.second);
+    return Math.round((asUTC - date.getTime()) / 60000);
+}
 
-    // محاسبه اختلاف با UTC
+function updateClock(timezone) {
+    if (!timezone) return;
+    currentTzId = timezone;
+    tickClock(); // بلافاصله یک‌بار به‌روزرسانی کن، نه فقط منتظر تیک بعدی بمون
+}
+
+function tickClock() {
+    if (!currentTzId) return;
     const now = new Date();
-    const utcHours = now.getUTCHours();
-    const utcMinutes = now.getUTCMinutes();
-    const localDate = new Date(localtime);
-    const localHours = localDate.getHours();
-    const localMinutes = localDate.getMinutes();
 
-    let diffHours = localHours - utcHours;
-    let diffMinutes = localMinutes - utcMinutes;
-    if (diffMinutes < 0) {
-        diffMinutes += 60;
-        diffHours -= 1;
-    }
-    if (diffHours < -12) diffHours += 24;
-    if (diffHours > 12) diffHours -= 24;
+    // ساعت زنده‌ی محل (HH:MM:SS) با استفاده از timezone واقعی
+    DOM.localTime.textContent = new Intl.DateTimeFormat('en-GB', {
+        timeZone: currentTzId,
+        hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false
+    }).format(now);
+
+    // اختلاف با ساعت جهانی (UTC)
+    const diffTotalMinutes = getTzOffsetMinutes(currentTzId, now);
+    const sign = diffTotalMinutes >= 0 ? '+' : '-';
+    const diffHours = Math.floor(Math.abs(diffTotalMinutes) / 60);
+    const diffMinutes = Math.abs(diffTotalMinutes) % 60;
 
     const t = translations[currentLang];
-    let offsetText = '';
-    if (diffHours === 0 && diffMinutes === 0) {
+    let offsetText;
+    if (diffTotalMinutes === 0) {
         offsetText = t.offsetSame;
     } else {
-        const sign = diffHours >= 0 ? '+' : '';
-        const formattedOffset = `${sign}${diffHours}:${String(Math.abs(diffMinutes)).padStart(2, '0')}`;
+        const formattedOffset = `${sign}${diffHours}:${String(diffMinutes).padStart(2, '0')}`;
         offsetText = t.offsetHours.replace('{offset}', formattedOffset);
     }
     DOM.timeOffset.textContent = offsetText;
