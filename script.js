@@ -98,6 +98,21 @@ const weatherTranslations = {
     'Patchy light snow with thunder': 'برف خفیف پراکنده همراه با رعد',
     'Moderate or heavy snow with thunder': 'برف متوسط یا سنگین همراه با رعد',
     'Clear': 'صاف',
+    'Smoky haze': 'دودآلود',
+    'Thunderstorm with light hail': 'رعد و برق با تگرگ خفیف',
+    'Thunderstorm with heavy hail': 'رعد و برق با تگرگ سنگین',
+    'Fog': 'مه',
+    'Partly Cloudy': 'نیمه ابری',
+    'Partly cloudy': 'نیمه ابری',
+    'Moderate rain shower': 'رگبار باران متوسط',
+    'Patchy light rain in area with thunder': 'باران خفیف پراکنده همراه با رعد در منطقه',
+    'Moderate drizzle': 'نم نم باران متوسط',
+    'Heavy drizzle': 'نم نم باران سنگین',
+    'Light freezing drizzle': 'نم نم باران یخ‌زده خفیف',
+    'Heavy freezing drizzle': 'نم نم باران یخ‌زده سنگین',
+    'Snow grains': 'دانه‌های برف',
+    'Light snow shower': 'رگبار خفیف برف',
+    'Heavy snow shower': 'رگبار سنگین برف',
 };
 
 //  دیکشنری آیکون‌های جایگزین 
@@ -223,10 +238,18 @@ searchInput.addEventListener('input', function() {
 });
 
 // تابع دریافت پیشنهادات از سرور
+let suggestController = null; // برای لغو درخواست‌های قدیمی‌تر
+
 function fetchCitySuggestions(query) {
+    // اگر درخواست قبلی هنوز در حال اجراست، لغوش کن تا جواب قدیمی جای جواب جدید رو نگیره
+    if (suggestController) {
+        suggestController.abort();
+    }
+    suggestController = new AbortController();
+
     const url = `backend.php?type=suggest&q=${encodeURIComponent(query)}&lang=${currentLang}`;
-    
-    fetch(url)
+
+    fetch(url, { signal: suggestController.signal })
         .then(res => res.json())
         .then(data => {
             datalist.innerHTML = '';
@@ -241,7 +264,11 @@ function fetchCitySuggestions(query) {
                 });
             }
         })
-        .catch(err => console.error('خطا در دریافت پیشنهادات:', err));
+        .catch(err => {
+            if (err.name !== 'AbortError') {
+                console.error('خطا در دریافت پیشنهادات:', err);
+            }
+        });
 }
 
 //  دریافت موقعیت 
@@ -315,6 +342,20 @@ searchInput.addEventListener('keypress', function(e) {
 });
 
 
+// ==================== راه‌اندازی ====================
+document.addEventListener('DOMContentLoaded', function() {
+    setLanguage('fa');
+    getLocation();
+    DOM.citySearch.placeholder = translations.fa.searchPlaceholder;
+
+    // بروزرسانی ساعت هر دقیقه
+    if (clockInterval) clearInterval(clockInterval);
+    clockInterval = setInterval(() => {
+        // جای این‌جا برای منطق آینده‌ی به‌روزرسانی ساعت نگه داشته شده
+    }, 60000);
+});
+
+
 // دریافت داده‌های امروز و فردا
 function fetchWeather(lat, lon, lang, city = null) {
     let url = `backend.php?type=weather&lang=${lang}`;
@@ -345,6 +386,13 @@ function fetchWeather(lat, lon, lang, city = null) {
         }
     }
 
+    // اگر مختصات از قبل داریم (جستجوی شهر با lat/lon، نه با نام)،
+    // fetchWeekly رو هم‌زمان با fetchWeather شروع کن، نه بعد از اتمام اون
+    // (این دو درخواست به هم وابسته نیستند مگر وقتی جستجو فقط با نام شهر انجام شده)
+    if (lat && lon) {
+        fetchWeekly(lat, lon, lang);
+    }
+
     fetch(url)
         .then(res => res.json())
         .then(data => {
@@ -354,6 +402,7 @@ function fetchWeather(lat, lon, lang, city = null) {
             }
             
             // به‌روزرسانی currentCoords با مختصات جدید
+            const hadCoordsBefore = !!(lat && lon);
             if (data.location) {
                 currentCoords = {
                     lat: data.location.lat,
@@ -367,8 +416,9 @@ function fetchWeather(lat, lon, lang, city = null) {
             }));
             displayWeather(data);
             
-            // دریافت داده‌های هفتگی با مختصات جدید
-            if (currentCoords) {
+            // اگر جستجو با نام شهر بود (مختصات از قبل معلوم نبود)،
+            // فقط بعد از دریافت مختصات از پاسخ weather می‌تونیم weekly رو بگیریم
+            if (!hadCoordsBefore && currentCoords) {
                 fetchWeekly(currentCoords.lat, currentCoords.lon, lang);
             }
         })
@@ -766,22 +816,6 @@ DOM.langBtns.forEach(btn => {
     });
 });
 
-//  راه‌اندازی 
-document.addEventListener('DOMContentLoaded', function() {
-    setLanguage('fa');
-    getLocation();
-    DOM.citySearch.placeholder = translations.fa.searchPlaceholder;
-
-    // بروزرسانی ساعت هر دقیقه
-    if (clockInterval) clearInterval(clockInterval);
-    clockInterval = setInterval(() => {
-        // اگر داده‌های موقعیت موجوده، دوباره زمان رو به‌روز کن
-        if (currentCoords) {
-            // می‌تونیم از کش شده استفاده کنیم یا دوباره واکشی کنیم
-            // فعلاً کاری نمی‌کنیم چون توی displayWeather تنظیم میشه
-        }
-    }, 60000);
-});
 
 
 //نمایش پیش بینی هفتگی 
