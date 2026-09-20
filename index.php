@@ -94,7 +94,7 @@
 
         <!-- پیش بینی هفتگی -->
         <section id="weekly-forecast">
-            <h2><i class="fas fa-calender-week"></i><span data-i8n="weekly">پیش بینی هفتگی</span></h2>
+            <h2><i class="fas fa-calender-week"></i><span data-i18n="weekly">پیش بینی هفتگی</span></h2>
             <div id="weekly-container" class="weekly container">
                 <!-- کارت های هفتگی با جاوااسکریپت -->
             </div>

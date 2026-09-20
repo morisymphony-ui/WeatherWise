@@ -102,8 +102,6 @@ const weatherTranslations = {
     'Thunderstorm with light hail': 'رعد و برق با تگرگ خفیف',
     'Thunderstorm with heavy hail': 'رعد و برق با تگرگ سنگین',
     'Fog': 'مه',
-    'Partly Cloudy': 'نیمه ابری',
-    'Partly cloudy': 'نیمه ابری',
     'Moderate rain shower': 'رگبار باران متوسط',
     'Patchy light rain in area with thunder': 'باران خفیف پراکنده همراه با رعد در منطقه',
     'Moderate drizzle': 'نم نم باران متوسط',
@@ -144,6 +142,74 @@ const weatherTranslations = {
     'Moderate or heavy snow with thunder': 'برف متوسط یا سنگین همراه با رعد',
     'Smoky haze': 'دودآلود',
     'Thunderstorm': 'رعد و برق',
+};
+
+// دیکشنری ترجمه وضعیت‌ها (اسپانیایی) 
+const weatherTranslationsEs = {
+    'Sunny': 'Soleado',
+    'Partly cloudy': 'Parcialmente nublado',
+    'Cloudy': 'Nublado',
+    'Overcast': 'Cubierto',
+    'Mist': 'Neblinoso',
+    'Patchy rain nearby': 'Lluvia dispersa cerca',
+    'Patchy light drizzle': 'Llovizna ligera dispersa',
+    'Light drizzle': 'Llovizna ligera',
+    'Patchy light rain': 'Lluvia ligera dispersa',
+    'Light rain': 'Lluvia ligera',
+    'Moderate rain at times': 'Lluvia moderada a veces',
+    'Moderate rain': 'Lluvia moderada',
+    'Heavy rain at times': 'Lluvia fuerte a veces',
+    'Heavy rain': 'Lluvia fuerte',
+    'Light freezing rain': 'Lluvia helada ligera',
+    'Moderate or heavy freezing rain': 'Lluvia helada moderada o fuerte',
+    'Light sleet': 'Aguanieve ligera',
+    'Moderate or heavy sleet': 'Aguanieve moderada o fuerte',
+    'Patchy light snow': 'Nieve ligera dispersa',
+    'Light snow': 'Nieve ligera',
+    'Patchy moderate snow': 'Nieve moderada dispersa',
+    'Moderate snow': 'Nieve moderada',
+    'Patchy heavy snow': 'Nieve fuerte dispersa',
+    'Heavy snow': 'Nieve fuerte',
+    'Ice pellets': 'Gránulos de hielo',
+    'Light rain shower': 'Chubasco ligero',
+    'Moderate or heavy rain shower': 'Chubasco moderado o fuerte',
+    'Torrential rain shower': 'Chubasco torrencial',
+    'Light sleet showers': 'Chubascos ligeros de aguanieve',
+    'Moderate or heavy sleet showers': 'Chubascos moderados o fuertes de aguanieve',
+    'Light snow showers': 'Chubascos ligeros de nieve',
+    'Moderate or heavy snow showers': 'Chubascos moderados o fuertes de nieve',
+    'Light showers of ice pellets': 'Chubascos ligeros de gránulos de hielo',
+    'Moderate or heavy showers of ice pellets': 'Chubascos moderados o fuertes de gránulos de hielo',
+    'Patchy light rain with thunder': 'Lluvia ligera dispersa con truenos',
+    'Moderate or heavy rain with thunder': 'Lluvia moderada o fuerte con truenos',
+    'Patchy light snow with thunder': 'Nieve ligera dispersa con truenos',
+    'Moderate or heavy snow with thunder': 'Nieve moderada o fuerte con truenos',
+    'Clear': 'Despejado',
+    'Smoky haze': 'Neblina ahumada',
+    'Thunderstorm': 'Tormenta eléctrica',
+    'Thunderstorm with light hail': 'Tormenta con granizo ligero',
+    'Thunderstorm with heavy hail': 'Tormenta con granizo fuerte',
+    'Fog': 'Niebla',
+    'Moderate rain shower': 'Chubasco moderado',
+    'Patchy light rain in area with thunder': 'Lluvia ligera dispersa en zona con truenos',
+    'Moderate drizzle': 'Llovizna moderada',
+    'Heavy drizzle': 'Llovizna fuerte',
+    'Light freezing drizzle': 'Llovizna helada ligera',
+    'Heavy freezing drizzle': 'Llovizna helada fuerte',
+    'Snow grains': 'Granos de nieve',
+    'Light snow shower': 'Chubasco ligero de nieve',
+    'Heavy snow shower': 'Chubasco fuerte de nieve',
+    'Blowing snow': 'Nieve soplada',
+    'Blizzard': 'Ventisca',
+    'Snowstorm': 'Tormenta de nieve',
+    'Snow': 'Nieve',
+    'Snow showers': 'Chubascos de nieve',
+    'Heavy snow showers': 'Chubascos fuertes de nieve',
+    'Moderate snow showers': 'Chubascos moderados de nieve',
+    'Patchy snow nearby': 'Nieve dispersa cerca',
+    'Light ice pellets': 'Gránulos de hielo ligeros',
+    'Heavy ice pellets': 'Gránulos de hielo fuertes',
+    'Light snow with thunder': 'Nieve ligera con truenos',
 };
 
 //  دیکشنری آیکون‌های جایگزین 
@@ -250,7 +316,7 @@ function setLanguage(lang) {
     }
 }
 
-// ==================== جستجوی هوشمند با Datalist ====================
+// جستجوی هوشمند با Datalist 
 const searchInput = document.getElementById('citySearch');
 const datalist = document.getElementById('citySuggestions');
 let searchTimeout = null;
@@ -374,7 +440,7 @@ searchInput.addEventListener('keypress', function(e) {
 });
 
 
-// ==================== راه‌اندازی ====================
+// راه‌اندازی 
 document.addEventListener('DOMContentLoaded', function() {
     setLanguage('fa');
     getLocation();
@@ -573,6 +639,10 @@ function translateCondition(text) {
     if (currentLang === 'fa') {
         return weatherTranslations[text] || text;
     }
+    if (currentLang === 'es') {
+        return weatherTranslationsEs[text] || text;
+    }
+    // برای انگلیسی، همون متن اصلی رو برگردون
     return text;
 }
 
@@ -656,6 +726,9 @@ function tickClock() {
         offsetText = t.offsetHours.replace('{offset}', formattedOffset);
     }
     DOM.timeOffset.textContent = offsetText;
+
+    // پس‌زمینه و تم هم هر ثانیه بر اساس همین ساعت محلی به‌روزرسانی میشه
+    setThemeByTime();
 }
 
 //  نمایش ساعتی 
@@ -768,18 +841,50 @@ function updateMap(lat, lon, name = '') {
     }
 }
 
-//  تنظیم تم بر اساس ساعت محلی 
+//  محاسبه‌ی میزان «شب بودن» به‌صورت پیوسته: 0 = روز کامل، 1 = شب کامل 
+// بین ساعت DAWN_START تا DAWN_END به‌آرامی از شب به روز میره (نزدیک ۶ صبح)
+// بین ساعت DUSK_START تا DUSK_END به‌آرامی از روز به شب میره (نزدیک ۶ عصر)
+function getNightFactor(date, tzId) {
+    const parts = new Intl.DateTimeFormat('en-US', {
+        timeZone: tzId || undefined,
+        hour: '2-digit', minute: '2-digit', hour12: false
+    }).formatToParts(date).reduce((acc, p) => {
+        if (p.type !== 'literal') acc[p.type] = p.value;
+        return acc;
+    }, {});
+    const hourDecimal = parseInt(parts.hour, 10) + parseInt(parts.minute, 10) / 60;
+
+    const DAWN_START = 5, DAWN_END = 7;    // طلوع: ۵ تا ۷ صبح، مرکز آن ۶ صبح
+    const DUSK_START = 17, DUSK_END = 19;  // غروب: ۵ تا ۷ عصر، مرکز آن ۶ عصر
+
+    if (hourDecimal <= DAWN_START || hourDecimal >= DUSK_END) {
+        return 1; // شب کامل
+    }
+    if (hourDecimal >= DAWN_END && hourDecimal <= DUSK_START) {
+        return 0; // روز کامل
+    }
+    if (hourDecimal < DAWN_END) {
+        // در حال طلوع: مقدار از ۱ (شب) به ۰ (روز) کاهش پیدا می‌کنه
+        return 1 - (hourDecimal - DAWN_START) / (DAWN_END - DAWN_START);
+    }
+    // در حال غروب: مقدار از ۰ (روز) به ۱ (شب) افزایش پیدا می‌کنه
+    return (hourDecimal - DUSK_START) / (DUSK_END - DUSK_START);
+}
+
+//  تنظیم تم و محو شدن پیوسته‌ی پس‌زمینه، بر اساس ساعتِ محلِ شهر انتخاب‌شده (نه دستگاه کاربر) 
 function setThemeByTime() {
     const now = new Date();
-    const hours = now.getHours();
+    const factor = getNightFactor(now, currentTzId); // 0..1
 
+    // این خط باعث محو شدن نرم پس‌زمینه می‌شود (به style.css نگاه کنید: --night-opacity)
+    document.body.style.setProperty('--night-opacity', factor.toFixed(3));
+
+    // کلاس تم هم برای رنگ متن/کارت‌ها به‌روزرسانی می‌شود (پلکانی، نه پیوسته)
     let theme = 'day';
-    if (hours >= 6 && hours < 17) {
-        theme = 'day';
-    } else if (hours >= 17 && hours < 19) {
-        theme = 'sunset';
-    } else {
+    if (factor >= 0.75) {
         theme = 'night';
+    } else if (factor > 0.1) {
+        theme = 'sunset';
     }
     document.body.className = theme;
 }
