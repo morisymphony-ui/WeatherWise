@@ -61,6 +61,7 @@ const weekDays = {
 const weatherTranslations = {
     'Sunny': 'آفتابی',
     'Partly cloudy': 'نیمه ابری',
+    'Partly Cloudy': 'نیمه ابری',
     'Cloudy': 'ابری',
     'Overcast': 'تمام ابری',
     'Mist': 'مه‌آلود',
@@ -148,6 +149,7 @@ const weatherTranslations = {
 const weatherTranslationsEs = {
     'Sunny': 'Soleado',
     'Partly cloudy': 'Parcialmente nublado',
+    'Partly Cloudy': 'Parcialmente nublado',
     'Cloudy': 'Nublado',
     'Overcast': 'Cubierto',
     'Mist': 'Neblinoso',
