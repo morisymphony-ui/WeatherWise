@@ -318,7 +318,7 @@ function setLanguage(lang) {
     }
 }
 
-// جستجوی هوشمند با Datalist 
+// ==================== جستجوی هوشمند با Datalist ====================
 const searchInput = document.getElementById('citySearch');
 const datalist = document.getElementById('citySuggestions');
 let searchTimeout = null;
@@ -442,7 +442,7 @@ searchInput.addEventListener('keypress', function(e) {
 });
 
 
-// راه‌اندازی 
+// ==================== راه‌اندازی ====================
 document.addEventListener('DOMContentLoaded', function() {
     setLanguage('fa');
     getLocation();
@@ -641,10 +641,6 @@ function translateCondition(text) {
     if (currentLang === 'fa') {
         return weatherTranslations[text] || text;
     }
-    if (currentLang === 'es') {
-        return weatherTranslationsEs[text] || text;
-    }
-    // برای انگلیسی، همون متن اصلی رو برگردون
     return text;
 }
 
@@ -843,10 +839,30 @@ function updateMap(lat, lon, name = '') {
     }
 }
 
-//  محاسبه‌ی میزان «شب بودن» به‌صورت پیوسته: 0 = روز کامل، 1 = شب کامل 
-// بین ساعت DAWN_START تا DAWN_END به‌آرامی از شب به روز میره (نزدیک ۶ صبح)
-// بین ساعت DUSK_START تا DUSK_END به‌آرامی از روز به شب میره (نزدیک ۶ عصر)
-function getNightFactor(date, tzId) {
+//  ابزار کمکی: تبدیل رنگ HEX به [r,g,b] 
+function hexToRgb(hex) {
+    hex = hex.replace('#', '');
+    return [
+        parseInt(hex.substring(0, 2), 16),
+        parseInt(hex.substring(2, 4), 16),
+        parseInt(hex.substring(4, 6), 16)
+    ];
+}
+
+// درون‌یابی خطی بین دو رنگ HEX با نسبت t (بین ۰ و ۱) -> رشته‌ی "rgb(r, g, b)"
+// همین باعث میشه رنگ به‌جای «یهو عوض شدن»، به آرامی و بدون آزار چشم تغییر کنه
+function lerpColor(hexA, hexB, t) {
+    t = Math.max(0, Math.min(1, t));
+    const [r1, g1, b1] = hexToRgb(hexA);
+    const [r2, g2, b2] = hexToRgb(hexB);
+    const r = Math.round(r1 + (r2 - r1) * t);
+    const g = Math.round(g1 + (g2 - g1) * t);
+    const b = Math.round(b1 + (b2 - b1) * t);
+    return `rgb(${r}, ${g}, ${b})`;
+}
+
+// ساعت محلی (با اعشار دقیقه) در منطقه‌ی زمانی داده‌شده، مثلاً ۶:۳۰ -> 6.5
+function getLocalHourDecimal(date, tzId) {
     const parts = new Intl.DateTimeFormat('en-US', {
         timeZone: tzId || undefined,
         hour: '2-digit', minute: '2-digit', hour12: false
@@ -854,9 +870,14 @@ function getNightFactor(date, tzId) {
         if (p.type !== 'literal') acc[p.type] = p.value;
         return acc;
     }, {});
-    const hourDecimal = parseInt(parts.hour, 10) + parseInt(parts.minute, 10) / 60;
+    return parseInt(parts.hour, 10) + parseInt(parts.minute, 10) / 60;
+}
 
-    const DAWN_START = 5, DAWN_END = 7;    // طلوع: ۵ تا ۷ صبح، مرکز آن ۶ صبح
+//  محاسبه‌ی میزان «شب بودن» به‌صورت پیوسته: 0 = روز کامل، 1 = شب کامل 
+// بین ساعت DAWN_START تا DAWN_END به‌آرامی از شب به روز میره (نزدیک ۵ صبح)
+// بین ساعت DUSK_START تا DUSK_END به‌آرامی از روز به شب میره (نزدیک ۶ عصر)
+function getNightFactor(hourDecimal) {
+    const DAWN_START = 4, DAWN_END = 6;    // طلوع: ۴ تا ۶ صبح
     const DUSK_START = 17, DUSK_END = 19;  // غروب: ۵ تا ۷ عصر، مرکز آن ۶ عصر
 
     if (hourDecimal <= DAWN_START || hourDecimal >= DUSK_END) {
@@ -873,19 +894,43 @@ function getNightFactor(date, tzId) {
     return (hourDecimal - DUSK_START) / (DUSK_END - DUSK_START);
 }
 
-//  تنظیم تم و محو شدن پیوسته‌ی پس‌زمینه، بر اساس ساعتِ محلِ شهر انتخاب‌شده (نه دستگاه کاربر) 
+// میزان «تیرگی اضافه‌ی نیمه‌شب»: ۰ به‌جز نزدیکی‌های ۰۰:۰۰، و دقیقاً در ۰۰:۰۰ به بیشترین مقدار (۱) می‌رسه
+// این باعث میشه شب یکدست نباشه؛ نزدیک نیمه‌شب کمی تیره‌تر از مثلاً ساعت ۸ شب یا ۳ بامداد به‌نظر بیاد
+function getMidnightDepth(hourDecimal) {
+    const WINDOW = 3; // فقط بین ۲۱:۰۰ و ۰۳:۰۰ این افکت اعمال میشه (۳ ساعت قبل/بعد از نیمه‌شب)
+    let distance = Math.min(hourDecimal, 24 - hourDecimal); // فاصله تا ۰۰:۰۰ با در نظر گرفتن چرخش شبانه‌روز
+    if (distance >= WINDOW) {
+        return 0;
+    }
+    return 1 - (distance / WINDOW);
+}
+
+//  تنظیم تم و محو شدن پیوسته‌ی پس‌زمینه و متن، بر اساس ساعتِ محلِ شهر انتخاب‌شده (نه دستگاه کاربر) 
 function setThemeByTime() {
     const now = new Date();
-    const factor = getNightFactor(now, currentTzId); // 0..1
+    const hourDecimal = getLocalHourDecimal(now, currentTzId);
 
-    // این خط باعث محو شدن نرم پس‌زمینه می‌شود (به style.css نگاه کنید: --night-opacity)
-    document.body.style.setProperty('--night-opacity', factor.toFixed(3));
+    const nightFactor = getNightFactor(hourDecimal);       // 0..1 (روز کامل تا شب کامل)
+    const midnightDepth = getMidnightDepth(hourDecimal);   // 0..1 (فقط نزدیک نیمه‌شب غیرصفره)
 
-    // کلاس تم هم برای رنگ متن/کارت‌ها به‌روزرسانی می‌شود (پلکانی، نه پیوسته)
+    // محو شدن پیوسته‌ی خودِ پس‌زمینه (همون منطق قبلی)
+    document.body.style.setProperty('--night-opacity', nightFactor.toFixed(3));
+
+    // رنگ گرادینت شب رو کمی تیره‌تر کن، فقط نزدیک نیمه‌شب (حداکثر ۶۰٪ به سمت تقریباً مشکی)
+    const nightC1 = lerpColor('#0a0a2a', '#000006', midnightDepth * 0.6);
+    const nightC2 = lerpColor('#1a1a3e', '#04040c', midnightDepth * 0.6);
+    document.body.style.setProperty('--night-c1', nightC1);
+    document.body.style.setProperty('--night-c2', nightC2);
+
+    // رنگ متن (تیتر‌ها، اسم شهر و ...) هم به‌آرامی و پیوسته بین رنگ روز و شب تغییر می‌کنه
+    // تا هنگام تغییر تم، چشم اذیت نشه (به‌جای پرش ناگهانی رنگ)
+    document.body.style.setProperty('--text-color', lerpColor('#1a1a2e', '#e0e0ff', nightFactor));
+
+    // کلاس تم هم برای پس‌زمینه‌ی کارت‌ها به‌روزرسانی می‌شود (پلکانی، نه پیوسته)
     let theme = 'day';
-    if (factor >= 0.75) {
+    if (nightFactor >= 0.75) {
         theme = 'night';
-    } else if (factor > 0.1) {
+    } else if (nightFactor > 0.1) {
         theme = 'sunset';
     }
     document.body.className = theme;

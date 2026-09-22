@@ -1,7 +1,9 @@
 <?php
 require_once 'config.php';
 
+
 // بارگذاری Geographer (در صورت وجود)
+
 use MenaraSolutions\Geographer\Earth;
 
 header('Content-Type: application/json');
@@ -20,6 +22,7 @@ if (!in_array($lang, ['en', 'fa', 'es'])) {
 
 
 // تابع ترجمه با Geographer (فقط برای فارسی)
+
 function getGeographerCities() {
     // ساخته می‌شود فقط یک بار در طول اجرای اسکریپت (نه هر بار که تابع صدا زده می‌شود)
     static $cities = null;
@@ -54,6 +57,7 @@ function translateCityWithGeographer($cityName, $lang) {
 
 
 // تابع ترجمه با Google Translate (Fallback)
+
 function translateWithGoogle($text, $targetLang = 'en') {
     if (!defined('GOOGLE_TRANSLATE_API_KEY') || empty(GOOGLE_TRANSLATE_API_KEY)) {
         return $text;
@@ -92,6 +96,7 @@ function translateWithGoogle($text, $targetLang = 'en') {
 
 
 // تابع ترکیبی ترجمه (برای جستجوی اصلی)
+
 function translateCityName($cityName, $lang) {
     $translated = translateCityWithGeographer($cityName, $lang);
     if ($translated === $cityName && $lang === 'fa') {
@@ -102,6 +107,7 @@ function translateCityName($cityName, $lang) {
 
 
 // تابع کمکی برای درخواست با cURL
+
 function fetchUrl($url) {
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, $url);
@@ -124,12 +130,77 @@ function fetchUrl($url) {
 
 // فرمت‌دهی مختصات بدون وابستگی به locale سرور
 // (جلوگیری از تبدیل نقطه اعشار به کاما در برخی تنظیمات locale)
+
 function fmtCoord($value) {
     return sprintf('%.6F', (float)$value);
 }
 
 
+// کش جستجوی شهر (یک فایل JSON روی سرور)
+// این کش بین همه‌ی بازدیدکننده‌ها مشترکه: هر شهر فقط یک‌بار واقعاً
+// جستجو/ترجمه میشه (کار سنگین Geographer + درخواست به API های بیرونی)،
+// و دفعات بعد مستقیم از این فایل خونده میشه.
+
+define('CITY_CACHE_FILE', __DIR__ . '/cache/city_cache.json');
+define('CITY_CACHE_TTL', 60 * 60 * 24 * 30); // ۳۰ روز؛ مختصات شهرها عملاً تغییر نمی‌کنه
+
+function loadCityCache() {
+    if (!file_exists(CITY_CACHE_FILE)) {
+        return [];
+    }
+    $fp = @fopen(CITY_CACHE_FILE, 'r');
+    if (!$fp) {
+        return [];
+    }
+    flock($fp, LOCK_SH);
+    $content = stream_get_contents($fp);
+    flock($fp, LOCK_UN);
+    fclose($fp);
+    $data = json_decode($content, true);
+    return is_array($data) ? $data : [];
+}
+
+function saveCityCache($cache) {
+    $dir = dirname(CITY_CACHE_FILE);
+    if (!is_dir($dir)) {
+        @mkdir($dir, 0775, true);
+    }
+    $fp = @fopen(CITY_CACHE_FILE, 'c+');
+    if (!$fp) {
+        error_log("City cache: نمی‌تونم فایل {$dir} رو برای نوشتن باز کنم — دسترسی نوشتن رو چک کن.");
+        return false;
+    }
+    flock($fp, LOCK_EX);
+    ftruncate($fp, 0);
+    rewind($fp);
+    fwrite($fp, json_encode($cache, JSON_UNESCAPED_UNICODE));
+    fflush($fp);
+    flock($fp, LOCK_UN);
+    fclose($fp);
+    return true;
+}
+
+function cityCacheKey($type, $lang, $query) {
+    return $type . ':' . $lang . ':' . mb_strtolower(trim($query));
+}
+
+function getCityCache($key) {
+    $cache = loadCityCache();
+    if (isset($cache[$key]) && (time() - $cache[$key]['t']) < CITY_CACHE_TTL) {
+        return $cache[$key]['v'];
+    }
+    return null;
+}
+
+function setCityCache($key, $value) {
+    $cache = loadCityCache();
+    $cache[$key] = ['v' => $value, 't' => time()];
+    saveCityCache($cache);
+}
+
+
 // تابع جستجوی شهر با OpenWeatherMap (Fallback)
+
 function searchCityWithOpenWeatherMap($cityName) {
     if (!defined('OPENWEATHER_API_KEY') || empty(OPENWEATHER_API_KEY)) {
         return null;
@@ -156,10 +227,19 @@ function searchCityWithOpenWeatherMap($cityName) {
 
 
 // بخش Suggest (پیشنهادات حین تایپ)
+
 if ($type === 'suggest') {
     $q = isset($_GET['q']) ? $_GET['q'] : '';
     if (strlen($q) < 2) {
         echo json_encode([]);
+        exit;
+    }
+
+    // اول از کش JSON چک کن
+    $cacheKey = cityCacheKey('suggest', $lang, $q);
+    $cached = getCityCache($cacheKey);
+    if ($cached !== null) {
+        echo json_encode($cached);
         exit;
     }
     
@@ -173,7 +253,8 @@ if ($type === 'suggest') {
     if ($result['httpCode'] === 200) {
         $suggestData = json_decode($result['response'], true);
         if (!empty($suggestData)) {
-            echo $result['response'];
+            setCityCache($cacheKey, $suggestData);
+            echo json_encode($suggestData);
             exit;
         }
         // WeatherAPI با HTTP 200 برگشت ولی آرایه خالی بود → برو سراغ Fallback
@@ -191,10 +272,12 @@ if ($type === 'suggest') {
             'lon' => $openWeatherResult['lon'],
             'url' => ''
         ]];
+        setCityCache($cacheKey, $formatted);
         echo json_encode($formatted);
         exit;
     }
     
+    // نتیجه‌ی خالی رو کش نمی‌کنیم؛ شاید فقط یک قطعی موقت API بوده
     echo json_encode([]);
     exit;
 }
@@ -203,27 +286,41 @@ if ($type === 'suggest') {
 // جستجوی شهر با نام (برای type=weather یا weekly)
 
 if ($city && !$lat && !$lon) {
-    // ترجمه نام شهر (فارسی به انگلیسی) با ترکیب Geographer + Google
-    $searchQuery = translateCityName($city, $lang);
-    
-    // ۱. اول با WeatherAPI جستجو کن
-    $searchUrl = "http://api.weatherapi.com/v1/search.json?key=" . WEATHER_API_KEY . "&q=" . urlencode($searchQuery) . "&lang=" . $lang;
-    $result = fetchUrl($searchUrl);
-    
-    if ($result['httpCode'] === 200) {
-        $searchData = json_decode($result['response'], true);
-        if (!empty($searchData)) {
-            $lat = $searchData[0]['lat'];
-            $lon = $searchData[0]['lon'];
+    // اول از کش JSON چک کن
+    $cityCacheKeyStr = cityCacheKey('search', $lang, $city);
+    $cachedCoords = getCityCache($cityCacheKeyStr);
+
+    if ($cachedCoords !== null) {
+        $lat = $cachedCoords['lat'];
+        $lon = $cachedCoords['lon'];
+    } else {
+        // ترجمه نام شهر (فارسی به انگلیسی) با ترکیب Geographer + Google
+        $searchQuery = translateCityName($city, $lang);
+        
+        // ۱. اول با WeatherAPI جستجو کن
+        $searchUrl = "http://api.weatherapi.com/v1/search.json?key=" . WEATHER_API_KEY . "&q=" . urlencode($searchQuery) . "&lang=" . $lang;
+        $result = fetchUrl($searchUrl);
+        
+        if ($result['httpCode'] === 200) {
+            $searchData = json_decode($result['response'], true);
+            if (!empty($searchData)) {
+                $lat = $searchData[0]['lat'];
+                $lon = $searchData[0]['lon'];
+            }
         }
-    }
-    
-    // ۲. اگر WeatherAPI پیدا نکرد، از OpenWeatherMap به‌عنوان Fallback استفاده کن
-    if (!$lat || !$lon) {
-        $openWeatherResult = searchCityWithOpenWeatherMap($searchQuery);
-        if ($openWeatherResult) {
-            $lat = $openWeatherResult['lat'];
-            $lon = $openWeatherResult['lon'];
+        
+        // ۲. اگر WeatherAPI پیدا نکرد، از OpenWeatherMap به‌عنوان Fallback استفاده کن
+        if (!$lat || !$lon) {
+            $openWeatherResult = searchCityWithOpenWeatherMap($searchQuery);
+            if ($openWeatherResult) {
+                $lat = $openWeatherResult['lat'];
+                $lon = $openWeatherResult['lon'];
+            }
+        }
+
+        // نتیجه‌ی موفق رو کش کن تا دفعه‌ی بعد نیازی به Geographer/API نباشه
+        if ($lat && $lon) {
+            setCityCache($cityCacheKeyStr, ['lat' => $lat, 'lon' => $lon]);
         }
     }
     
@@ -263,6 +360,7 @@ if ($type === 'weather') {
 
 
 // بخش ۲: هفتگی (Open-Meteo) با Fallback به WeatherAPI
+
 if ($type === 'weekly') {
     $latStr = fmtCoord($lat);
     $lonStr = fmtCoord($lon);
@@ -297,6 +395,7 @@ if ($type === 'weekly') {
 
 
 // اگر نوع نامشخص بود، پیش‌فرض weather
+
 $latStr = fmtCoord($lat);
 $lonStr = fmtCoord($lon);
 $url = "http://api.weatherapi.com/v1/forecast.json?key=" . WEATHER_API_KEY 
@@ -311,6 +410,7 @@ echo $result['response'];
 
 
 // تابع تبدیل Open-Meteo به فرمت WeatherAPI
+
 function convertOpenMeteoToWeatherAPI($data, $lat, $lon, $lang) {
     $daily = $data['daily'];
     $forecastDays = [];

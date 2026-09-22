@@ -338,7 +338,7 @@ section h2 {
     font-weight: 500;
     margin-bottom: 15px;
     padding-bottom: 8px;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.65);
 }
 .hours-container {
     display: grid;
