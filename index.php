@@ -17,6 +17,32 @@
     <link rel="stylesheet" href="style.css?v=2">
 </head>
 <body>
+
+<!-- صفحه لودینگ -->
+<div id="loading-screen" class="loading-screen">
+    <div class="loading-content">
+        <div class="loading-logo">
+            <i class="fas fa-cloud-sun"></i>
+        </div>
+        <h2 class="loading-title" id="loadingTitle">WeatherWise</h2>
+        <p class="loading-message" id="loadingMessage">در حال دریافت موقعیت...</p>
+        <div class="loader"></div>
+        
+        <!-- انتخاب زبان در صفحه لودینگ -->
+        <div class="loading-lang-selector">
+            <button class="loading-lang-btn active" data-lang="fa">فارسی</button>
+            <button class="loading-lang-btn" data-lang="en">English</button>
+            <button class="loading-lang-btn" data-lang="es">Español</button>
+        </div>
+        
+        <!-- دکمه تلاش مجدد (فقط در خطا) -->
+        <button class="loading-retry-btn" id="loadingRetryBtn" style="display:none;">
+            <i class="fas fa-redo"></i>
+            <span id="retryText">تلاش مجدد</span>
+        </button>
+    </div>
+</div>
+
     <div class="container">
         <!-- هدر -->
         <header>
@@ -38,7 +64,7 @@
                 <div class="search-box">
                     <input type="text" id="citySearch" list="citySuggestions" placeholder="جستجوی شهر..." autocomplete="off" />
                     <datalist id="citySuggestions"></datalist>
-                    <button id="searchBtn"><i class="fas fa-search"></i></button>
+                    <button id="searchBtn" aria-label="جستجو"><i class="fas fa-search"></i></button>
                 </div>
                 <div class="lang-selector">
                     <button class="lang-btn active" data-lang="fa">فا</button>

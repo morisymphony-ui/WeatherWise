@@ -143,6 +143,32 @@ const weatherTranslations = {
     'Moderate or heavy snow with thunder': 'برف متوسط یا سنگین همراه با رعد',
     'Smoky haze': 'دودآلود',
     'Thunderstorm': 'رعد و برق',
+    'Thundery outbreaks in nearby': 'رعد و برق‌های پراکنده در نزدیکی',
+    'Thundery outbreaks possible': 'احتمال رعد و برق',
+    'Patchy light rain with thunder': 'باران خفیف پراکنده همراه با رعد',
+    'Moderate or heavy rain with thunder': 'باران متوسط یا سنگین همراه با رعد',
+    'Light rain with thunder': 'باران خفیف همراه با رعد',
+    'Squalls': 'تندباد',
+    'Freezing fog': 'مه یخ‌زده',
+    'Ice pellets': 'دانه‌های یخ',
+    'Heavy freezing rain': 'باران یخ‌زده سنگین',
+    'Light freezing rain': 'باران یخ‌زده خفیف',
+    'Patchy freezing drizzle nearby': 'نم نم باران یخ‌زده پراکنده در نزدیکی',
+    'Freezing drizzle': 'نم نم باران یخ‌زده',
+    'Moderate or heavy showers of ice pellets': 'رگبار متوسط یا سنگین دانه‌های یخ',
+    'Light showers of ice pellets': 'رگبار خفیف دانه‌های یخ',
+    'Moderate or heavy snow with thunder': 'برف متوسط یا سنگین همراه با رعد',
+    'Patchy light snow with thunder': 'برف خفیف پراکنده همراه با رعد',
+    'Light snow with thunder': 'برف خفیف همراه با رعد',
+    'Sandstorm': 'طوفان شن',
+    'Duststorm': 'طوفان گرد و خاک',
+    'Dust': 'گرد و خاک',
+    'Smoke': 'دود',
+    'Haze': 'غبار',
+    'Fog': 'مه',
+    'Freezing fog': 'مه یخ‌زده',
+    'Mist': 'مه رقیق',
+    'Overcast': 'تمام ابری',
 };
 
 // دیکشنری ترجمه وضعیت‌ها (اسپانیایی) 
@@ -212,6 +238,31 @@ const weatherTranslationsEs = {
     'Light ice pellets': 'Gránulos de hielo ligeros',
     'Heavy ice pellets': 'Gránulos de hielo fuertes',
     'Light snow with thunder': 'Nieve ligera con truenos',
+    'Thundery outbreaks in nearby': 'Tormentas eléctricas dispersas cerca',
+    'Thundery outbreaks possible': 'Posibles tormentas eléctricas',
+    'Patchy light rain with thunder': 'Lluvia ligera dispersa con truenos',
+    'Moderate or heavy rain with thunder': 'Lluvia moderada o fuerte con truenos',
+    'Light rain with thunder': 'Lluvia ligera con truenos',
+    'Squalls': 'Rachas de viento',
+    'Freezing fog': 'Niebla helada',
+    'Heavy freezing rain': 'Lluvia helada fuerte',
+    'Light freezing rain': 'Lluvia helada ligera',
+    'Patchy freezing drizzle nearby': 'Llovizna helada dispersa cerca',
+    'Freezing drizzle': 'Llovizna helada',
+    'Moderate or heavy showers of ice pellets': 'Chubascos moderados o fuertes de gránulos de hielo',
+    'Light showers of ice pellets': 'Chubascos ligeros de gránulos de hielo',
+    'Moderate or heavy snow with thunder': 'Nieve moderada o fuerte con truenos',
+    'Patchy light snow with thunder': 'Nieve ligera dispersa con truenos',
+    'Light snow with thunder': 'Nieve ligera con truenos',
+    'Sandstorm': 'Tormenta de arena',
+    'Duststorm': 'Tormenta de polvo',
+    'Dust': 'Polvo',
+    'Smoke': 'Humo',
+    'Haze': 'Calima',
+    'Fog': 'Niebla',
+    'Freezing fog': 'Niebla helada',
+    'Mist': 'Neblina',
+    'Overcast': 'Cubierto',
 };
 
 //  دیکشنری آیکون‌های جایگزین 
@@ -301,6 +352,107 @@ const DOM = {
     timeOffset: document.getElementById('timeOffset'),
 };
 
+// مدیریت صفحه لودینگ
+const LoadingScreen = {
+    element: document.getElementById('loading-screen'),
+    title: document.getElementById('loadingTitle'),
+    message: document.getElementById('loadingMessage'),
+    retryBtn: document.getElementById('loadingRetryBtn'),
+    retryText: document.getElementById('retryText'),
+    langBtns: document.querySelectorAll('.loading-lang-btn'),
+    isHidden: false,
+    
+    // پیام‌ها به سه زبان
+    messages: {
+        fa: {
+            locating: 'در حال دریافت موقعیت مکانی...',
+            loading: 'در حال دریافت اطلاعات آب و هوا...',
+            translating: 'در حال ترجمه و آماده‌سازی...',
+            errorLocation: 'خطا در دریافت موقعیت. لطفاً دسترسی موقعیت را فعال کنید.',
+            errorWeather: 'خطا در دریافت اطلاعات آب و هوا. لطفاً دوباره تلاش کنید.',
+            errorNetwork: 'خطا در اتصال به سرور. اتصال اینترنت خود را بررسی کنید.',
+            retry: 'تلاش مجدد',
+            timeout: 'زمان انتظار به پایان رسید. لطفاً دوباره تلاش کنید.',
+        },
+        en: {
+            locating: 'Getting your location...',
+            loading: 'Fetching weather data...',
+            translating: 'Translating and preparing...',
+            errorLocation: 'Location access failed. Please enable location permission.',
+            errorWeather: 'Failed to fetch weather data. Please try again.',
+            errorNetwork: 'Network error. Please check your internet connection.',
+            retry: 'Try Again',
+            timeout: 'Request timed out. Please try again.',
+        },
+        es: {
+            locating: 'Obteniendo tu ubicación...',
+            loading: 'Cargando datos del clima...',
+            translating: 'Traduciendo y preparando...',
+            errorLocation: 'Error al obtener la ubicación. Activa el permiso de ubicación.',
+            errorWeather: 'Error al cargar los datos del clima. Inténtalo de nuevo.',
+            errorNetwork: 'Error de red. Verifica tu conexión a internet.',
+            retry: 'Intentar de nuevo',
+            timeout: 'Tiempo de espera agotado. Inténtalo de nuevo.',
+        }
+    },
+    
+    show() {
+        this.isHidden = false;
+        this.element.classList.remove('hidden');
+        this.retryBtn.style.display = 'none';
+        this.message.classList.remove('error');
+    },
+    
+    hide() {
+        if (this.isHidden) return;
+        this.isHidden = true;
+        this.element.classList.add('hidden');
+        // بعد از محو شدن، کاملاً حذف کن
+        setTimeout(() => {
+            this.element.style.display = 'none';
+        }, 1000);
+    },
+    
+    setMessage(key, isError = false) {
+        const t = this.messages[currentLang] || this.messages.en;
+        this.message.textContent = t[key] || key;
+        this.message.classList.toggle('error', isError);
+        if (isError) {
+            this.retryBtn.style.display = 'flex';
+            this.retryText.textContent = t.retry || 'Retry';
+        }
+    },
+    
+    updateLanguageButtons(lang) {
+        this.langBtns.forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.lang === lang);
+        });
+    }
+};
+
+// رویداد کلیک روی دکمه‌های زبان در لودینگ
+LoadingScreen.langBtns.forEach(btn => {
+    btn.addEventListener('click', function() {
+        const lang = this.dataset.lang;
+        currentLang = lang;
+        LoadingScreen.updateLanguageButtons(lang);
+        setLanguage(lang);
+        
+        // اگر خطا نمایش داده شده، دوباره تلاش کن
+        if (LoadingScreen.retryBtn.style.display !== 'none') {
+            LoadingScreen.setMessage('locating');
+            getLocation();
+        }
+    });
+});
+
+// رویداد کلیک روی دکمه تلاش مجدد
+LoadingScreen.retryBtn.addEventListener('click', function() {
+    LoadingScreen.setMessage('locating');
+    LoadingScreen.retryBtn.style.display = 'none';
+    getLocation();
+});
+
 //  تنظیم زبان 
 function setLanguage(lang) {
     currentLang = lang;
@@ -316,9 +468,12 @@ function setLanguage(lang) {
     if (currentCoords) {
         fetchWeather(currentCoords.lat, currentCoords.lon, lang);
     }
+    if (currentCoords && LoadingScreen.isHidden) {
+        fetchWeather(currentCoords.lat, currentCoords.lon, lang);
+    }
 }
 
-// ==================== جستجوی هوشمند با Datalist ====================
+//  جستجوی هوشمند با Datalist 
 const searchInput = document.getElementById('citySearch');
 const datalist = document.getElementById('citySuggestions');
 let searchTimeout = null;
@@ -373,6 +528,7 @@ function fetchCitySuggestions(query) {
 
 //  دریافت موقعیت 
 function getLocation() {
+    LoadingScreen.setMessage('locating'); 
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
             pos => {
@@ -380,10 +536,16 @@ function getLocation() {
                     lat: pos.coords.latitude,
                     lon: pos.coords.longitude
                 };
+                LoadingScreen.setMessage('loading');
                 fetchWeather(currentCoords.lat, currentCoords.lon, currentLang);
                 updateMap(currentCoords.lat, currentCoords.lon);
             },
-            () => fetchLocationByIP()
+            (err) => {
+                console.warn('Geolocation failed:', err.message);
+                LoadingScreen.setMessage('loading');
+                fetchLocationByIP();
+            },
+            { timeout: 10000, enableHighAccuracy: false }
         );
     } else {
         fetchLocationByIP();
@@ -399,11 +561,11 @@ function fetchLocationByIP() {
                 fetchWeather(currentCoords.lat, currentCoords.lon, currentLang);
                 updateMap(currentCoords.lat, currentCoords.lon);
             } else {
-                alert('نمی توان موقعیت را تشخیص داد. لطفا یک شهر جستجو کنید.');
-            }
+                LoadingScreen.setMessage('errorLocation', true);            }
         })
-        .catch(() => alert('خطا در دریافت موقعیت. لطفا یک شهر جستجو کنید.'));
-}
+        .catch(() => {
+            LoadingScreen.setMessage('errorLocation', true);
+        });}
 
 //  جستجوی شهر 
 function searchCity() {
@@ -442,10 +604,30 @@ searchInput.addEventListener('keypress', function(e) {
 });
 
 
-// ==================== راه‌اندازی ====================
+// راه‌اندازی 
 document.addEventListener('DOMContentLoaded', function() {
+    // راه‌اندازی
     setLanguage('fa');
+
+    // تایمر محافظ: اگه بعد از ۳۰ ثانیه هنوز لودینگ بود، خطا نشون بده
+    let loadingTimeout = setTimeout(() => {
+        if (!LoadingScreen.isHidden) {
+            LoadingScreen.setMessage('timeout', true);
+        }
+    }, 30000);
+
+    // پاک کردن تایمر هنگام بسته شدن لودینگ
+    const originalHide = LoadingScreen.hide.bind(LoadingScreen);
+    LoadingScreen.hide = function() {
+        if (loadingTimeout) {
+            clearTimeout(loadingTimeout);
+            loadingTimeout = null;
+        }
+        originalHide();
+    };
+
     getLocation();
+
     DOM.citySearch.placeholder = translations.fa.searchPlaceholder;
 
     // ساعت هر ثانیه زنده به‌روزرسانی میشه (کاملاً سمت کلاینت، بدون فراخوانی API)
@@ -476,21 +658,30 @@ function fetchWeather(lat, lon, lang, city = null, forceRefresh = false) {
     }
 
     const cacheKey = `weather_${city || `${lat}_${lon}`}_${lang}`;
-    const cached = forceRefresh ? null : localStorage.getItem(cacheKey);
+    let cached = null;
+    try {
+        cached = forceRefresh ? null : localStorage.getItem(cacheKey);
+    } catch (e) {
+        console.warn('localStorage در دسترس نیست (مثلاً حالت خصوصی مرورگر):', e);
+    }
     if (cached) {
-        const data = JSON.parse(cached);
-        const age = Date.now() - data.timestamp;
-        if (age < 30 * 60 * 1000) {
-            displayWeather(data.weather);
-            // به‌روزرسانی مختصات از کش
-            if (data.weather.location) {
-                currentCoords = {
-                    lat: data.weather.location.lat,
-                    lon: data.weather.location.lon
-                };
-                fetchWeekly(currentCoords.lat, currentCoords.lon, lang);
+        try {
+            const data = JSON.parse(cached);
+            const age = Date.now() - data.timestamp;
+            if (age < 30 * 60 * 1000) {
+                displayWeather(data.weather);
+                // به‌روزرسانی مختصات از کش
+                if (data.weather.location) {
+                    currentCoords = {
+                        lat: data.weather.location.lat,
+                        lon: data.weather.location.lon
+                    };
+                    fetchWeekly(currentCoords.lat, currentCoords.lon, lang);
+                }
+                return;
             }
-            return;
+        } catch (e) {
+            console.warn('داده‌ی کش‌شده خراب بود، نادیده گرفته شد:', e);
         }
     }
 
@@ -505,7 +696,18 @@ function fetchWeather(lat, lon, lang, city = null, forceRefresh = false) {
         .then(res => res.json())
         .then(data => {
             if (data.error) {
-                alert('خطا: ' + data.error);
+                if (!LoadingScreen.isHidden) {
+                    // تا وقتی صفحه‌ی لودینگ فعاله، هیچ alert ای نشون نده — خطا رو خودِ لودینگ نشون می‌ده
+                    LoadingScreen.setMessage('errorWeather', true);
+                } else {
+                    // بعد از لودینگ (مثلاً جستجوی شهر جدید)، همچنان alert بزن ولی به زبان خودِ کاربر
+                    const alertMsgs = {
+                        fa: 'خطا: شهر پیدا نشد یا مشکلی در دریافت اطلاعات آب‌وهوا پیش اومد.',
+                        en: 'Error: city not found or a problem occurred fetching weather data.',
+                        es: 'Error: ciudad no encontrada o hubo un problema al obtener los datos del clima.'
+                    };
+                    alert(alertMsgs[currentLang] || alertMsgs.en);
+                }
                 return;
             }
             
@@ -518,11 +720,22 @@ function fetchWeather(lat, lon, lang, city = null, forceRefresh = false) {
                 };
             }
             
-            localStorage.setItem(cacheKey, JSON.stringify({
-                weather: data,
-                timestamp: Date.now()
-            }));
+            try {
+                localStorage.setItem(cacheKey, JSON.stringify({
+                    weather: data,
+                    timestamp: Date.now()
+                }));
+            } catch (e) {
+                console.warn('ذخیره در localStorage ممکن نشد (مثلاً حالت خصوصی مرورگر):', e);
+            }
             displayWeather(data);
+            
+            // محو کردن صفحه لودینگ
+            LoadingScreen.hide();
+
+            if (currentCoords) {
+                fetchWeekly(currentCoords.lat, currentCoords.lon, lang);
+            }
             
             // اگر جستجو با نام شهر بود (مختصات از قبل معلوم نبود)،
             // فقط بعد از دریافت مختصات از پاسخ weather می‌تونیم weekly رو بگیریم
@@ -532,7 +745,7 @@ function fetchWeather(lat, lon, lang, city = null, forceRefresh = false) {
         })
         .catch(err => {
             console.error('Fetch error:', err);
-            alert('خطا در دریافت اطلاعات آب و هوا.');
+            LoadingScreen.setMessage('errorNetwork', true);
         });
 }
 
@@ -637,6 +850,17 @@ function displayWeather(data) {
 }
 
 //  ترجمه وضعیت 
+// نکته‌ی امنیتی: قبل از قرار دادن هر متن دینامیک توی innerHTML، این تابع کاراکترهای خطرناک HTML رو escape می‌کنه
+function escapeHtml(str) {
+    if (str === null || str === undefined) return '';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
 function translateCondition(text) {
     if (currentLang === 'fa') {
         return weatherTranslations[text] || text;
@@ -745,11 +969,13 @@ function displayHours(container, hours) {
         card.className = 'hour-card';
         card.style.animationDelay = `${index * 0.03}s`;
 
+        // نکته‌ی امنیتی: هرچند این مقادیر از API آب‌وهوا میان (نه مستقیم از کاربر)،
+        // برای احتیاط (defense in depth) قبل از قرار گرفتن توی innerHTML، escape میشن
         card.innerHTML = `
-            <div class="time">${timeStr}</div>
-            <img src="${iconUrl}" alt="${translatedCondition}">
+            <div class="time">${escapeHtml(timeStr)}</div>
+            <img src="${escapeHtml(iconUrl)}" alt="${escapeHtml(translatedCondition)}">
             <div class="temp">${Math.round(temp)}°C</div>
-            <div class="condition">${translatedCondition}</div>
+            <div class="condition">${escapeHtml(translatedCondition)}</div>
         `;
         container.appendChild(card);
     });
@@ -905,13 +1131,30 @@ function getMidnightDepth(hourDecimal) {
     return 1 - (distance / WINDOW);
 }
 
+// میزان «شب بودن» مخصوص رنگ متن: از ۴ تا ۵ صبح رنگ‌پریده (حالت شب) می‌مونه،
+// بین ۵ تا ۶ صبح به آرامی به سمت تیره (حالت روز) میره، و از ۶ صبح به بعد کاملاً تیره‌ست.
+function getTextNightFactor(hourDecimal) {
+    const PALE_HOLD_START = 4, RAMP_START = 5, RAMP_END = 6;
+
+    if (hourDecimal >= PALE_HOLD_START && hourDecimal < RAMP_START) {
+        return 1; // رنگ‌پریده (حالت شب) — بین ۴ تا ۵ صبح
+    }
+    if (hourDecimal >= RAMP_START && hourDecimal <= RAMP_END) {
+        // گذار نرم از رنگ‌پریده به تیره — بین ۵ تا ۶ صبح
+        return 1 - (hourDecimal - RAMP_START) / (RAMP_END - RAMP_START);
+    }
+    // بیرون از این بازه‌ها، دقیقاً هماهنگ با پس‌زمینه (که خودش هم در همین حوالی صبح می‌شه)
+    return getNightFactor(hourDecimal);
+}
+
 //  تنظیم تم و محو شدن پیوسته‌ی پس‌زمینه و متن، بر اساس ساعتِ محلِ شهر انتخاب‌شده (نه دستگاه کاربر) 
 function setThemeByTime() {
     const now = new Date();
     const hourDecimal = getLocalHourDecimal(now, currentTzId);
 
-    const nightFactor = getNightFactor(hourDecimal);       // 0..1 (روز کامل تا شب کامل)
+    const nightFactor = getNightFactor(hourDecimal);       // 0..1 (روز کامل تا شب کامل) - برای پس‌زمینه
     const midnightDepth = getMidnightDepth(hourDecimal);   // 0..1 (فقط نزدیک نیمه‌شب غیرصفره)
+    const textNightFactor = getTextNightFactor(hourDecimal); // 0..1 - برای رنگ متن (زمان‌بندی جداگانه‌ی صبح)
 
     // محو شدن پیوسته‌ی خودِ پس‌زمینه (همون منطق قبلی)
     document.body.style.setProperty('--night-opacity', nightFactor.toFixed(3));
@@ -924,7 +1167,8 @@ function setThemeByTime() {
 
     // رنگ متن (تیتر‌ها، اسم شهر و ...) هم به‌آرامی و پیوسته بین رنگ روز و شب تغییر می‌کنه
     // تا هنگام تغییر تم، چشم اذیت نشه (به‌جای پرش ناگهانی رنگ)
-    document.body.style.setProperty('--text-color', lerpColor('#1a1a2e', '#e0e0ff', nightFactor));
+    // رنگ متن تم شب رنگ‌پریده‌تر شد (نزدیک‌تر به سفید، به‌جای بنفش-آبی پررنگ قبلی)
+    document.body.style.setProperty('--text-color', lerpColor('#1a1a2e', '#f0f0f8', textNightFactor));
 
     // کلاس تم هم برای پس‌زمینه‌ی کارت‌ها به‌روزرسانی می‌شود (پلکانی، نه پیوسته)
     let theme = 'day';
@@ -952,21 +1196,27 @@ function applyWeatherEffect(condition) {
 
     const conditionLower = condition.toLowerCase();
     
-    // تشخیص باران (انگلیسی یا فارسی)
+    // تشخیص باران (انگلیسی، فارسی یا اسپانیایی)
     const isRain = conditionLower.includes('rain') || 
                    conditionLower.includes('drizzle') || 
                    conditionLower.includes('باران') || 
                    conditionLower.includes('نم') ||
                    conditionLower.includes('shower') ||
-                   conditionLower.includes('رگبار');
+                   conditionLower.includes('رگبار') ||
+                   conditionLower.includes('lluvia') ||
+                   conditionLower.includes('llovizna') ||
+                   conditionLower.includes('chubasco');
     
-    // تشخیص آفتاب (انگلیسی یا فارسی)
+    // تشخیص آفتاب (انگلیسی، فارسی یا اسپانیایی)
     const isSun = conditionLower.includes('sun') || 
                   conditionLower.includes('clear') || 
                   conditionLower.includes('آفتاب') || 
                   conditionLower.includes('صاف') ||
                   conditionLower.includes('partly cloudy') ||
-                  conditionLower.includes('نیمه ابری');
+                  conditionLower.includes('نیمه ابری') ||
+                  conditionLower.includes('sol') ||
+                  conditionLower.includes('despejado') ||
+                  conditionLower.includes('parcialmente nublado');
 
     if (isRain) {
         // ساخت باران
@@ -1063,6 +1313,11 @@ function displayWeekly(forecastDays) {
         const avgTemp = day.day.avgtemp_c;
         const conditionText = day.day.condition.text;
         const translatedCondition = translateCondition(conditionText);
+
+        // وضعیت شب حالا واقعاً جدا از روزه (اگه از Open-Meteo اومده باشه).
+        // فقط اگه این داده موجود نبود (مثلاً توی حالت fallback سه‌روزه‌ی WeatherAPI)، همون وضعیت روز رو نشون بده
+        const nightConditionText = day.night?.condition?.text || conditionText;
+        const translatedNightCondition = translateCondition(nightConditionText);
         
         // برچسب امروز
         const isToday = index === 0;
@@ -1073,14 +1328,14 @@ function displayWeekly(forecastDays) {
         card.style.animationDelay = `${index * 0.05}s`;
         
         card.innerHTML = `
-            <div class="week-day">${dayLabel}</div>
-            <div class="week-date">${isToday ? '' : dateStr}</div>
-            <div class="week-emoji">${emoji}</div>
-            <div class="week-temp">${typeof avgTemp === 'number' ? Math.round(avgTemp) : avgTemp}°C</div>
-            <div class="week-desc">${translatedCondition}</div>
+            <div class="week-day">${escapeHtml(dayLabel)}</div>
+            <div class="week-date">${isToday ? '' : escapeHtml(dateStr)}</div>
+            <div class="week-emoji">${escapeHtml(emoji)}</div>
+            <div class="week-temp">${typeof avgTemp === 'number' ? Math.round(avgTemp) : escapeHtml(String(avgTemp))}°C</div>
+            <div class="week-desc">${escapeHtml(translatedCondition)}</div>
             <div class="week-day-night">
-                <span>☀️ ${translatedCondition}</span>
-                <span>🌙 ${translatedCondition}</span>
+                <span>☀️ ${escapeHtml(translatedCondition)}</span>
+                <span>🌙 ${escapeHtml(translatedNightCondition)}</span>
             </div>
         `;
         

@@ -1,28 +1,57 @@
 <?php
 require_once 'config.php';
 
+// ====
+// سخت‌گیری امنیتی: خطاهای PHP هرگز مستقیم به کاربر نمایش داده نشن
+// (فقط توی لاگ سرور ثبت می‌شن؛ جلوگیری از لو رفتن مسیر فایل‌ها/ساختار سرور)
+// ====
+error_reporting(E_ALL);
+ini_set('display_errors', '0');
 
+// ====
 // بارگذاری Geographer (در صورت وجود)
-
+// ====
 use MenaraSolutions\Geographer\Earth;
 
 header('Content-Type: application/json');
 
-// دریافت پارامترها
+// ====
+// دریافت و اعتبارسنجی پارامترهای ورودی
+// ====
 $lat = isset($_GET['lat']) ? $_GET['lat'] : null;
 $lon = isset($_GET['lon']) ? $_GET['lon'] : null;
-$city = isset($_GET['city']) ? $_GET['city'] : null;
+$city = isset($_GET['city']) ? trim((string)$_GET['city']) : null;
 $lang = isset($_GET['lang']) ? $_GET['lang'] : 'en';
 $type = isset($_GET['type']) ? $_GET['type'] : 'weather'; // weather, weekly, suggest
 
-// اعتبارسنجی زبان
+// اعتبارسنجی زبان (whitelist)
 if (!in_array($lang, ['en', 'fa', 'es'])) {
     $lang = 'en';
 }
 
+// اعتبارسنجی type (whitelist) — به‌جای اجازه دادن به هر مقدار دلخواه
+if (!in_array($type, ['weather', 'weekly', 'suggest'])) {
+    $type = 'weather';
+}
 
+// اعتبارسنجی طول نام شهر — جلوگیری از ورودی‌های غیرمنطقی‌بلند
+// (هم برای امنیت، هم برای جلوگیری از پر شدن بی‌رویه‌ی کش با ورودی‌های مزخرف)
+if ($city !== null) {
+    if (mb_strlen($city) > 100) {
+        http_response_code(400);
+        echo json_encode(['error' => 'نام شهر خیلی طولانیه']);
+        exit;
+    }
+    // حذف کاراکترهای کنترلی نامرئی که می‌تونن باعث رفتار غیرمنتظره بشن
+    $city = preg_replace('/[\x00-\x1F\x7F]/u', '', $city);
+    if ($city === '') {
+        $city = null;
+    }
+}
+
+// ====
 // تابع ترجمه با Geographer (فقط برای فارسی)
-
+// ====
 function getGeographerCities() {
     // ساخته می‌شود فقط یک بار در طول اجرای اسکریپت (نه هر بار که تابع صدا زده می‌شود)
     static $cities = null;
@@ -33,9 +62,114 @@ function getGeographerCities() {
     return $cities;
 }
 
+// تشخیص این‌که آیا متن ورودی خط فارسی/عربی داره یا نه
+// (این تشخیص بر اساس خودِ متن تایپ‌شده‌ست، نه زبان انتخابی توی رابط کاربری —
+//  چون ممکنه کاربر رابط رو روی انگلیسی گذاشته باشه ولی اسم شهر رو فارسی تایپ کنه، یا برعکس)
+function containsPersianScript($text) {
+    return (bool) preg_match('/[\x{0600}-\x{06FF}]/u', $text);
+}
+
+// دیکشنری مطمئنِ شهرهای معروف ایران (فارسی -> انگلیسی)
+// این‌ها همیشه از این دیکشنری خونده میشن، نه از API ترجمه‌ی رایگان — چون اون API (MyMemory)
+// برای اسم‌های خاص کوتاه گاهی ترجمه‌ی کاملاً بی‌ربط برمی‌گردونه (مثلاً «اراک» -> «Saint Lucia»)
+function getKnownCityTranslation($cityName) {
+    static $knownCities = [
+        // مراکز استان‌ها
+        'تهران' => 'Tehran', 'مشهد' => 'Mashhad', 'اصفهان' => 'Isfahan',
+        'کرج' => 'Karaj', 'شیراز' => 'Shiraz', 'تبریز' => 'Tabriz',
+        'قم' => 'Qom', 'اهواز' => 'Ahvaz', 'کرمانشاه' => 'Kermanshah',
+        'رشت' => 'Rasht', 'زاهدان' => 'Zahedan', 'همدان' => 'Hamedan',
+        'یزد' => 'Yazd', 'اردبیل' => 'Ardabil', 'بندرعباس' => 'Bandar Abbas',
+        'اراک' => 'Arak', 'کرمان' => 'Kerman', 'ارومیه' => 'Urmia',
+        'زنجان' => 'Zanjan', 'سنندج' => 'Sanandaj', 'قزوین' => 'Qazvin',
+        'خرم‌آباد' => 'Khorramabad', 'خرم آباد' => 'Khorramabad',
+        'گرگان' => 'Gorgan', 'ساری' => 'Sari', 'بوشهر' => 'Bushehr',
+        'ایلام' => 'Ilam', 'بیرجند' => 'Birjand', 'شهرکرد' => 'Shahrekord',
+        'یاسوج' => 'Yasuj', 'سمنان' => 'Semnan', 'بجنورد' => 'Bojnord',
+        // شهرهای پرجمعیت/معروف دیگه (غیر از مرکز استان)
+        'نجف‌آباد' => 'Najafabad', 'نجف آباد' => 'Najafabad',
+        'سبزوار' => 'Sabzevar', 'نیشابور' => 'Neyshabur',
+        'قوچان' => 'Quchan', 'تربت‌حیدریه' => 'Torbat-e Heydarieh',
+        'تربت حیدریه' => 'Torbat-e Heydarieh', 'تربت‌جام' => 'Torbat-e Jam',
+        'خمینی‌شهر' => 'Khomeinishahr', 'نطنز' => 'Natanz',
+        'شاهرود' => 'Shahroud', 'دامغان' => 'Damghan',
+        'بابل' => 'Babol', 'آمل' => 'Amol', 'قائم‌شهر' => 'Qaemshahr',
+        'بهشهر' => 'Behshahr', 'رامسر' => 'Ramsar', 'نوشهر' => 'Noshahr',
+        'چالوس' => 'Chalus', 'تنکابن' => 'Tonekabon',
+        'گنبد کاووس' => 'Gonbad-e Kavus', 'علی‌آباد کتول' => 'Aliabad-e Katul',
+        'رشتخوار' => 'Rashtkhvar', 'کاشمر' => 'Kashmar', 'گناباد' => 'Gonabad',
+        'دزفول' => 'Dezful', 'آبادان' => 'Abadan', 'خرمشهر' => 'Khorramshahr',
+        'بندر ماهشهر' => 'Bandar-e Mahshahr', 'ماهشهر' => 'Mahshahr',
+        'شوشتر' => 'Shushtar', 'ایذه' => 'Izeh', 'اندیمشک' => 'Andimeshk',
+        'مسجدسلیمان' => 'Masjed Soleyman',
+        'بروجرد' => 'Borujerd', 'دورود' => 'Dorud', 'الیگودرز' => 'Aligudarz',
+        'خوی' => 'Khoy', 'میاندوآب' => 'Miandoab', 'مراغه' => 'Maragheh',
+        'مرند' => 'Marand', 'بناب' => 'Bonab', 'اهر' => 'Ahar',
+        'ملایر' => 'Malayer', 'نهاوند' => 'Nahavand', 'تویسرکان' => 'Tuyserkan',
+        'کاشان' => 'Kashan', 'ساوه' => 'Saveh',
+        'محلات' => 'Mahallat', 'خمین' => 'Khomein',
+        'میبد' => 'Meybod', 'اردکان' => 'Ardakan', 'بافق' => 'Bafq',
+        'رفسنجان' => 'Rafsanjan', 'سیرجان' => 'Sirjan', 'جیرفت' => 'Jiroft',
+        'بم' => 'Bam', 'زرند' => 'Zarand',
+        'ایرانشهر' => 'Iranshahr', 'چابهار' => 'Chabahar', 'سراوان' => 'Saravan',
+        'فسا' => 'Fasa', 'جهرم' => 'Jahrom', 'مرودشت' => 'Marvdasht',
+        'کازرون' => 'Kazerun', 'لار' => 'Lar', 'داراب' => 'Darab',
+        'سقز' => 'Saqqez', 'مریوان' => 'Marivan', 'بانه' => 'Baneh',
+        'قروه' => 'Qorveh', 'کامیاران' => 'Kamyaran',
+        'اسلام‌آباد غرب' => 'Eslamabad-e Gharb', 'پاوه' => 'Paveh',
+        'سرپل ذهاب' => 'Sarpol-e Zahab', 'هرسین' => 'Harsin',
+        'خرمدره' => 'Khorramdareh', 'ابهر' => 'Abhar',
+        'کوهدشت' => 'Kuhdasht', 'الشتر' => 'Aleshtar',
+        'لاهیجان' => 'Lahijan', 'لنگرود' => 'Langarud', 'آستارا' => 'Astara',
+        'رودسر' => 'Rudsar', 'بندر انزلی' => 'Bandar-e Anzali', 'انزلی' => 'Anzali',
+        'اسلام‌شهر' => 'Eslamshahr', 'ورامین' => 'Varamin', 'دماوند' => 'Damavand',
+        'شهریار' => 'Shahriar', 'ری' => 'Rey', 'پاکدشت' => 'Pakdasht',
+        'فردیس' => 'Fardis', 'نظرآباد' => 'Nazarabad',
+        'خوانسار' => 'Khansar', 'گلپایگان' => 'Golpayegan', 'شاهین‌شهر' => 'Shahin Shahr',
+        'فولادشهر' => 'Fooladshahr', 'زرین‌شهر' => 'Zarinshahr',
+        'آباده' => 'Abadeh', 'اقلید' => 'Eqlid', 'فیروزآباد' => 'Firuzabad',
+        'میناب' => 'Minab', 'جاسک' => 'Jask', 'کیش' => 'Kish', 'قشم' => 'Qeshm',
+        'بستک' => 'Bastak', 'خاش' => 'Khash', 'زابل' => 'Zabol',
+    ];
+    $normalized = mb_strtolower(trim($cityName));
+    foreach ($knownCities as $fa => $en) {
+        if (mb_strtolower($fa) === $normalized) {
+            return $en;
+        }
+    }
+    return null;
+}
+
+// ====
+// حرف‌به‌حرف‌نویسیِ فارسی به لاتین (Transliteration)، نه ترجمه‌ی معنایی
+// اسم‌های خاص (مثل اسم شهرها) باید «حرف‌نویسی» بشن نه «ترجمه»؛ همین اشتباهِ استفاده
+// از یک API ترجمه‌ی معنایی برای اسم‌های خاص بود که باعث نتایج بی‌ربط می‌شد (مثل «اراک» -> «Saint Lucia»).
+// این روش برای هر اسمی کار می‌کنه (نه فقط لیست بالا)، ولی چون فارسی مصوت‌های کوتاه رو نمی‌نویسه،
+// نتیجه‌ش تقریبیه، نه همیشه ۱۰۰٪ دقیق.
+// ====
+function transliteratePersian($text) {
+    static $map = [
+        'آ' => 'A', 'ا' => 'a', 'ب' => 'b', 'پ' => 'p', 'ت' => 't', 'ث' => 's',
+        'ج' => 'j', 'چ' => 'ch', 'ح' => 'h', 'خ' => 'kh', 'د' => 'd', 'ذ' => 'z',
+        'ر' => 'r', 'ز' => 'z', 'ژ' => 'zh', 'س' => 's', 'ش' => 'sh', 'ص' => 's',
+        'ض' => 'z', 'ط' => 't', 'ظ' => 'z', 'ع' => 'a', 'غ' => 'gh', 'ف' => 'f',
+        'ق' => 'gh', 'ک' => 'k', 'گ' => 'g', 'ل' => 'l', 'م' => 'm', 'ن' => 'n',
+        'و' => 'v', 'ه' => 'h', 'ی' => 'i', 'ء' => '', 'ئ' => 'i', 'أ' => 'a',
+        'إ' => 'e', 'ؤ' => 'o', 'ة' => 'h', '‌' => ' ', // نیم‌فاصله -> فاصله‌ی معمولی
+    ];
+    $result = '';
+    $len = mb_strlen($text);
+    for ($i = 0; $i < $len; $i++) {
+        $ch = mb_substr($text, $i, 1);
+        $result .= array_key_exists($ch, $map) ? $map[$ch] : $ch;
+    }
+    $result = trim(preg_replace('/\s+/', ' ', $result));
+    return mb_convert_case($result, MB_CASE_TITLE, 'UTF-8');
+}
+
 function translateCityWithGeographer($cityName, $lang) {
     global $geographerAvailable;
-    if ($lang !== 'fa' || !$geographerAvailable) {
+    if (!containsPersianScript($cityName) || !$geographerAvailable) {
         return $cityName;
     }
     try {
@@ -55,64 +189,76 @@ function translateCityWithGeographer($cityName, $lang) {
     }
 }
 
-
-// تابع ترجمه با Google Translate (Fallback)
-
-function translateWithGoogle($text, $targetLang = 'en') {
-    if (!defined('GOOGLE_TRANSLATE_API_KEY') || empty(GOOGLE_TRANSLATE_API_KEY)) {
-        return $text;
-    }
-    
-    $apiKey = GOOGLE_TRANSLATE_API_KEY;
-    $url = "https://translation.googleapis.com/language/translate/v2?key={$apiKey}";
-    $data = [
+// ====
+// تابع ترجمه با MyMemory (رایگان و بدون نیاز به کلید API یا حساب بانکی)
+// نکته: دیگه توی زنجیره‌ی حل‌کردن اسم شهر صدا زده نمی‌شه (چون برای اسم‌های خاص غیرقابل‌اعتماد بود،
+// مثل ترجمه‌ی «اراک» به «Saint Lucia»). به‌جاش الان transliteratePersian استفاده می‌شه.
+// این تابع فقط برای استفاده‌ی احتمالی در آینده (مثلاً ترجمه‌ی متن‌های دیگه) نگه داشته شده.
+// ====
+function translateWithMyMemory($text, $targetLang = 'en', $sourceLang = 'fa') {
+    $params = [
         'q' => $text,
-        'target' => $targetLang,
-        'source' => 'fa'
+        'langpair' => $sourceLang . '|' . $targetLang,
     ];
-    
-    $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL, $url);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_POST, true);
-    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
-    curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
-    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-    curl_setopt($ch, CURLOPT_TIMEOUT, 5);
-    $response = curl_exec($ch);
-    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    curl_close($ch);
-    
-    if ($httpCode !== 200) {
+    // اختیاری: اگه یک ایمیل توی config.php تعریف کنی (define('MYMEMORY_EMAIL', 'you@example.com');)
+    // سقف رایگان روزانه ۱۰ برابر میشه. کاملاً اختیاریه و بدون اون هم کار می‌کنه.
+    if (defined('MYMEMORY_EMAIL') && !empty(MYMEMORY_EMAIL)) {
+        $params['de'] = MYMEMORY_EMAIL;
+    }
+
+    $url = "https://api.mymemory.translated.net/get?" . http_build_query($params);
+    $result = fetchUrl($url);
+
+    if ($result['httpCode'] !== 200) {
         return $text;
     }
-    
-    $result = json_decode($response, true);
-    if (isset($result['data']['translations'][0]['translatedText'])) {
-        return $result['data']['translations'][0]['translatedText'];
+
+    $data = json_decode($result['response'], true);
+    if (!empty($data['responseData']['translatedText'])) {
+        if (!empty($data['quotaFinished'])) {
+            return $text;
+        }
+        return $data['responseData']['translatedText'];
     }
     return $text;
 }
 
-
+// ====
 // تابع ترکیبی ترجمه (برای جستجوی اصلی)
-
+// ترتیب اولویت: ۱) دیکشنری مطمئن  ۲) Geographer (اگه نصب باشه)  ۳) حرف‌نویسیِ خودمون (برای هر اسمی کار می‌کنه)
+// این تابع بر اساس خطِ خودِ متن ورودی تصمیم می‌گیره که ترجمه لازمه یا نه —
+// نه بر اساس $lang (که فقط زبان نمایش رابط کاربریه و ربطی به زبان تایپ‌شده نداره)
+// ====
 function translateCityName($cityName, $lang) {
-    $translated = translateCityWithGeographer($cityName, $lang);
-    if ($translated === $cityName && $lang === 'fa') {
-        $translated = translateWithGoogle($cityName);
+    if (!containsPersianScript($cityName)) {
+        return $cityName; // متن از قبل لاتینه؛ نیازی به ترجمه نیست
     }
-    return $translated;
+
+    // اول دیکشنریِ مطمئنِ شهرهای معروف رو چک کن (سریع‌تر و قابل‌اعتمادتر از هر API ای)
+    $known = getKnownCityTranslation($cityName);
+    if ($known !== null) {
+        return $known;
+    }
+
+    $translated = translateCityWithGeographer($cityName, $lang);
+    if ($translated !== $cityName) {
+        return $translated;
+    }
+
+    // نه دیکشنری نه Geographer چیزی پیدا نکردن؛ به‌جای یک API ترجمه‌ی غیرقابل‌اعتماد،
+    // از حرف‌نویسی خودمون استفاده کن — این برای هر اسمی (حتی خیلی کم‌شناخته) یه نتیجه‌ی معقول می‌ده
+    return transliteratePersian($cityName);
 }
 
-
+// ====
 // تابع کمکی برای درخواست با cURL
-
+// ====
 function fetchUrl($url) {
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, $url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
     curl_setopt($ch, CURLOPT_TIMEOUT, 10);
     $response = curl_exec($ch);
     $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
@@ -127,20 +273,79 @@ function fetchUrl($url) {
     return ['response' => $response, 'httpCode' => $httpCode, 'error' => $curlError];
 }
 
+// ====
+// محدودیت نرخ درخواست ساده (بر اساس IP)
+// جلوگیری از سوءاستفاده/غرق کردن سرور با درخواست‌های خودکار زیاد
+// ====
+define('RATE_LIMIT_FILE', __DIR__ . '/cache/rate_limit.json');
+define('RATE_LIMIT_MAX_REQUESTS', 30); // حداکثر ۳۰ درخواست
+define('RATE_LIMIT_WINDOW_SECONDS', 10); // در هر ۱۰ ثانیه، به ازای هر IP
 
+function checkRateLimit() {
+    $ip = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
+    $dir = dirname(RATE_LIMIT_FILE);
+    if (!is_dir($dir)) {
+        @mkdir($dir, 0775, true);
+    }
+    $htaccessPath = $dir . '/.htaccess';
+    if (!file_exists($htaccessPath)) {
+        @file_put_contents($htaccessPath, "Require all denied\n");
+    }
+
+    $fp = @fopen(RATE_LIMIT_FILE, 'c+');
+    if (!$fp) {
+        return true; // اگه نتونستیم فایل رو باز کنیم، درخواست رو مسدود نمی‌کنیم (fail-open)
+    }
+
+    flock($fp, LOCK_EX);
+    $content = stream_get_contents($fp);
+    $data = json_decode($content, true);
+    if (!is_array($data)) {
+        $data = [];
+    }
+
+    $now = time();
+    // پاک‌سازی رکوردهای قدیمی (جلوگیری از رشد بی‌رویه‌ی فایل)
+    foreach ($data as $key => $entry) {
+        if ($now - $entry['start'] > RATE_LIMIT_WINDOW_SECONDS) {
+            unset($data[$key]);
+        }
+    }
+
+    $allowed = true;
+    if (!isset($data[$ip]) || ($now - $data[$ip]['start']) > RATE_LIMIT_WINDOW_SECONDS) {
+        $data[$ip] = ['start' => $now, 'count' => 1];
+    } else {
+        $data[$ip]['count']++;
+        if ($data[$ip]['count'] > RATE_LIMIT_MAX_REQUESTS) {
+            $allowed = false;
+        }
+    }
+
+    ftruncate($fp, 0);
+    rewind($fp);
+    fwrite($fp, json_encode($data));
+    fflush($fp);
+    flock($fp, LOCK_UN);
+    fclose($fp);
+
+    return $allowed;
+}
+
+// ====
 // فرمت‌دهی مختصات بدون وابستگی به locale سرور
 // (جلوگیری از تبدیل نقطه اعشار به کاما در برخی تنظیمات locale)
-
+// ====
 function fmtCoord($value) {
     return sprintf('%.6F', (float)$value);
 }
 
-
+// ====
 // کش جستجوی شهر (یک فایل JSON روی سرور)
 // این کش بین همه‌ی بازدیدکننده‌ها مشترکه: هر شهر فقط یک‌بار واقعاً
 // جستجو/ترجمه میشه (کار سنگین Geographer + درخواست به API های بیرونی)،
 // و دفعات بعد مستقیم از این فایل خونده میشه.
-
+// ====
 define('CITY_CACHE_FILE', __DIR__ . '/cache/city_cache.json');
 define('CITY_CACHE_TTL', 60 * 60 * 24 * 30); // ۳۰ روز؛ مختصات شهرها عملاً تغییر نمی‌کنه
 
@@ -164,6 +369,12 @@ function saveCityCache($cache) {
     $dir = dirname(CITY_CACHE_FILE);
     if (!is_dir($dir)) {
         @mkdir($dir, 0775, true);
+    }
+    // امنیتی: مطمئن شو این پوشه از طریق مرورگر مستقیم قابل‌دسترسی نیست
+    // (این فقط برای هاست‌های Apache کار می‌کنه؛ روی Nginx باید توی تنظیمات سرور جلوش گرفته بشه)
+    $htaccessPath = $dir . '/.htaccess';
+    if (!file_exists($htaccessPath)) {
+        @file_put_contents($htaccessPath, "Require all denied\n");
     }
     $fp = @fopen(CITY_CACHE_FILE, 'c+');
     if (!$fp) {
@@ -198,15 +409,15 @@ function setCityCache($key, $value) {
     saveCityCache($cache);
 }
 
-
+// ====
 // تابع جستجوی شهر با OpenWeatherMap (Fallback)
-
+// ====
 function searchCityWithOpenWeatherMap($cityName) {
     if (!defined('OPENWEATHER_API_KEY') || empty(OPENWEATHER_API_KEY)) {
         return null;
     }
     
-    $url = "http://api.openweathermap.org/geo/1.0/direct?q=" . urlencode($cityName) . "&limit=1&appid=" . OPENWEATHER_API_KEY;
+    $url = "https://api.openweathermap.org/geo/1.0/direct?q=" . urlencode($cityName) . "&limit=1&appid=" . OPENWEATHER_API_KEY;
     $result = fetchUrl($url);
     
     if ($result['httpCode'] !== 200) {
@@ -225,13 +436,26 @@ function searchCityWithOpenWeatherMap($cityName) {
     return null;
 }
 
-
+// ====
 // بخش Suggest (پیشنهادات حین تایپ)
-
+// ====
 if ($type === 'suggest') {
-    $q = isset($_GET['q']) ? $_GET['q'] : '';
-    if (strlen($q) < 2) {
+    // محدودیت نرخ درخواست فقط این‌جا لازمه، چون این endpoint با هر کاراکتر تایپ‌شده صدا زده می‌شه
+    // (weather و weekly که فقط با هر بار باز کردن سایت اجرا می‌شن، نباید محدود بشن)
+    if (!checkRateLimit()) {
+        http_response_code(429);
+        echo json_encode(['error' => 'تعداد درخواست‌ها بیش از حد مجازه؛ لطفاً کمی صبر کن']);
+        exit;
+    }
+
+    $q = isset($_GET['q']) ? trim((string)$_GET['q']) : '';
+    $q = preg_replace('/[\x00-\x1F\x7F]/u', '', $q); // حذف کاراکترهای کنترلی
+    if (mb_strlen($q) < 2) {
         echo json_encode([]);
+        exit;
+    }
+    if (mb_strlen($q) > 100) {
+        echo json_encode([]); // ورودی غیرمنطقی‌بلند؛ چیزی برنمی‌گردونیم، نه خطا (چون این endpoint فقط پیشنهاده)
         exit;
     }
 
@@ -247,7 +471,7 @@ if ($type === 'suggest') {
     $searchQuery = translateCityName($q, $lang);
 
     // اول با WeatherAPI جستجو کن
-    $url = "http://api.weatherapi.com/v1/search.json?key=" . WEATHER_API_KEY . "&q=" . urlencode($searchQuery) . "&lang=" . $lang;
+    $url = "https://api.weatherapi.com/v1/search.json?key=" . WEATHER_API_KEY . "&q=" . urlencode($searchQuery) . "&lang=" . $lang;
     $result = fetchUrl($url);
     
     if ($result['httpCode'] === 200) {
@@ -282,9 +506,9 @@ if ($type === 'suggest') {
     exit;
 }
 
-
+// ====
 // جستجوی شهر با نام (برای type=weather یا weekly)
-
+// ====
 if ($city && !$lat && !$lon) {
     // اول از کش JSON چک کن
     $cityCacheKeyStr = cityCacheKey('search', $lang, $city);
@@ -298,7 +522,7 @@ if ($city && !$lat && !$lon) {
         $searchQuery = translateCityName($city, $lang);
         
         // ۱. اول با WeatherAPI جستجو کن
-        $searchUrl = "http://api.weatherapi.com/v1/search.json?key=" . WEATHER_API_KEY . "&q=" . urlencode($searchQuery) . "&lang=" . $lang;
+        $searchUrl = "https://api.weatherapi.com/v1/search.json?key=" . WEATHER_API_KEY . "&q=" . urlencode($searchQuery) . "&lang=" . $lang;
         $result = fetchUrl($searchUrl);
         
         if ($result['httpCode'] === 200) {
@@ -338,40 +562,73 @@ if (!is_numeric($lat) || !is_numeric($lon)) {
     exit;
 }
 
-
-// بخش ۱: امروز و فردا (WeatherAPI)
-
-if ($type === 'weather') {
-    $latStr = fmtCoord($lat);
-    $lonStr = fmtCoord($lon);
-    $url = "http://api.weatherapi.com/v1/forecast.json?key=" . WEATHER_API_KEY 
-           . "&q={$latStr},{$lonStr}&days=2&lang={$lang}";
-    $result = fetchUrl($url);
-    
-    if ($result['httpCode'] !== 200) {
-        http_response_code($result['httpCode']);
-        echo json_encode(['error' => 'خطا در دریافت اطلاعات آب و هوا']);
-        exit;
-    }
-    
-    echo $result['response'];
+// محدوده‌ی جغرافیایی واقعی رو هم چک کن، نه فقط اینکه عدد باشه
+$lat = (float)$lat;
+$lon = (float)$lon;
+if ($lat < -90 || $lat > 90 || $lon < -180 || $lon > 180) {
+    http_response_code(400);
+    echo json_encode(['error' => 'مختصات نامعتبر']);
     exit;
 }
 
+// ====
+// بخش ۱: امروز و فردا (WeatherAPI)
+// ====
+if ($type === 'weather') {
+    $latStr = fmtCoord($lat);
+    $lonStr = fmtCoord($lon);
+    $url = "https://api.weatherapi.com/v1/forecast.json?key=" . WEATHER_API_KEY 
+           . "&q={$latStr},{$lonStr}&days=2&lang={$lang}";
+    $result = fetchUrl($url);
+    
+    if ($result['httpCode'] === 200) {
+        echo $result['response'];
+        exit;
+    }
 
+    error_log("WeatherAPI (امروز/فردا) شکست خورد: httpCode={$result['httpCode']}, curlError=" . ($result['error'] ?: 'none'));
+
+    // Fallback به Open-Meteo (همون سرویسی که برای پیش‌بینی هفتگی استفاده می‌کنیم)
+    // این‌جا هم hourly و هم current رو می‌خوایم، چون بخش «امروز»/«فردا» به‌صورت ساعتی نمایش داده میشه
+    $meteoUrl = "https://api.open-meteo.com/v1/forecast?latitude={$latStr}&longitude={$lonStr}"
+              . "&hourly=temperature_2m,weather_code"
+              . "&daily=weather_code,temperature_2m_max,temperature_2m_min"
+              . "&current=temperature_2m,weather_code,relative_humidity_2m,wind_speed_10m"
+              . "&timezone=auto&forecast_days=2";
+    $meteoResult = fetchUrl($meteoUrl);
+
+    if ($meteoResult['httpCode'] === 200) {
+        $meteoData = json_decode($meteoResult['response'], true);
+        if ($meteoData && isset($meteoData['hourly']) && isset($meteoData['daily'])) {
+            $converted = convertOpenMeteoHourlyToWeatherAPI($meteoData, $lat, $lon, $lang);
+            echo json_encode($converted);
+            exit;
+        }
+        error_log("Open-Meteo (امروز/فردا) داده‌ی نامعتبر برگردوند.");
+    } else {
+        error_log("Open-Meteo (امروز/فردا) هم شکست خورد: httpCode={$meteoResult['httpCode']}, curlError=" . ($meteoResult['error'] ?: 'none'));
+    }
+
+    // اگه هیچ‌کدوم جواب ندادن، همون خطای اصلی رو نشون بده
+    http_response_code($result['httpCode']);
+    echo json_encode(['error' => 'خطا در دریافت اطلاعات آب و هوا']);
+    exit;
+}
+
+// ====
 // بخش ۲: هفتگی (Open-Meteo) با Fallback به WeatherAPI
-
+// ====
 if ($type === 'weekly') {
     $latStr = fmtCoord($lat);
     $lonStr = fmtCoord($lon);
-    $url = "https://api.open-meteo.com/v1/forecast?latitude={$latStr}&longitude={$lonStr}&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=auto&forecast_days=7";
+    $url = "https://api.open-meteo.com/v1/forecast?latitude={$latStr}&longitude={$lonStr}&daily=weather_code,temperature_2m_max,temperature_2m_min&hourly=weather_code&timezone=auto&forecast_days=7";
     $result = fetchUrl($url);
     
     if ($result['httpCode'] !== 200) {
         error_log("Open-Meteo weekly forecast failed for lat={$latStr}, lon={$lonStr}: httpCode={$result['httpCode']}, curlError=" . ($result['error'] ?: 'none') . ", body=" . substr((string)$result['response'], 0, 300));
 
         // Fallback به WeatherAPI (فقط ۳ روز - محدودیت پلن رایگان WeatherAPI)
-        $fallbackUrl = "http://api.weatherapi.com/v1/forecast.json?key=" . WEATHER_API_KEY 
+        $fallbackUrl = "https://api.weatherapi.com/v1/forecast.json?key=" . WEATHER_API_KEY 
                       . "&q={$latStr},{$lonStr}&days=3&lang={$lang}";
         $fallbackResult = fetchUrl($fallbackUrl);
         if ($fallbackResult['httpCode'] === 200) {
@@ -393,29 +650,11 @@ if ($type === 'weekly') {
     exit;
 }
 
-
-// اگر نوع نامشخص بود، پیش‌فرض weather
-
-$latStr = fmtCoord($lat);
-$lonStr = fmtCoord($lon);
-$url = "http://api.weatherapi.com/v1/forecast.json?key=" . WEATHER_API_KEY 
-       . "&q={$latStr},{$lonStr}&days=2&lang={$lang}";
-$result = fetchUrl($url);
-if ($result['httpCode'] !== 200) {
-    http_response_code($result['httpCode']);
-    echo json_encode(['error' => 'خطا در ارتباط با سرویس هواشناسی']);
-    exit;
-}
-echo $result['response'];
-
-
-// تابع تبدیل Open-Meteo به فرمت WeatherAPI
-
-function convertOpenMeteoToWeatherAPI($data, $lat, $lon, $lang) {
-    $daily = $data['daily'];
-    $forecastDays = [];
-    
-    $weatherCodes = [
+// ====
+// نگاشت کدهای وضعیت آب‌وهوای Open-Meteo (استفاده‌ی مشترک برای هفتگی و امروز/فردا)
+// ====
+function getOpenMeteoCondition($code) {
+    $map = [
         0 => 'Clear', 1 => 'Clear', 2 => 'Partly cloudy', 3 => 'Overcast',
         45 => 'Fog', 48 => 'Fog',
         51 => 'Light drizzle', 53 => 'Moderate drizzle', 55 => 'Heavy drizzle',
@@ -428,8 +667,11 @@ function convertOpenMeteoToWeatherAPI($data, $lat, $lon, $lang) {
         85 => 'Light snow shower', 86 => 'Heavy snow shower',
         95 => 'Thunderstorm', 96 => 'Thunderstorm with light hail', 99 => 'Thunderstorm with heavy hail',
     ];
-    
-    $weatherEmojis = [
+    return $map[$code] ?? 'Unknown';
+}
+
+function getOpenMeteoEmoji($code) {
+    $map = [
         0 => '☀️', 1 => '☀️', 2 => '⛅', 3 => '☁️',
         45 => '🌫️', 48 => '🌫️',
         51 => '🌧️', 53 => '🌧️', 55 => '🌧️',
@@ -442,21 +684,71 @@ function convertOpenMeteoToWeatherAPI($data, $lat, $lon, $lang) {
         85 => '🌨️', 86 => '❄️',
         95 => '⛈️', 96 => '⛈️', 99 => '⛈️',
     ];
-    
+    return $map[$code] ?? '🌤️';
+}
+
+// ====
+// تابع تبدیل Open-Meteo (روزانه، برای پیش‌بینی هفتگی) به فرمت WeatherAPI
+// ====
+// نزدیک‌ترین ساعتِ موجود به یک ساعتِ هدف رو پیدا می‌کنه (مثلاً نزدیک‌ترین به ۱۳ برای «روز»)
+function findClosestHourCode($hoursMap, $targetHour) {
+    if (empty($hoursMap)) {
+        return null;
+    }
+    $bestHour = null;
+    $bestDiff = 999;
+    foreach ($hoursMap as $hour => $code) {
+        $diff = abs($hour - $targetHour);
+        if ($diff < $bestDiff) {
+            $bestDiff = $diff;
+            $bestHour = $hour;
+        }
+    }
+    return $hoursMap[$bestHour];
+}
+
+function convertOpenMeteoToWeatherAPI($data, $lat, $lon, $lang) {
+    $daily = $data['daily'];
+    $forecastDays = [];
+
+    // اگه داده‌ی ساعتی موجود باشه، کد وضعیت رو برای هر روز به تفکیک ساعت گروه‌بندی کن
+    // تا بشه یه کد «نماینده‌ی روز» (مثلاً ساعت ۱۳) و یه کد «نماینده‌ی شب» (مثلاً ساعت ۰) جدا از هم پیدا کرد
+    $hourlyByDate = [];
+    if (isset($data['hourly']['time']) && isset($data['hourly']['weather_code'])) {
+        foreach ($data['hourly']['time'] as $i => $isoTime) {
+            $datePart = substr($isoTime, 0, 10);
+            $hourPart = (int)substr($isoTime, 11, 2);
+            $hourlyByDate[$datePart][$hourPart] = $data['hourly']['weather_code'][$i];
+        }
+    }
+
     for ($i = 0; $i < count($daily['time']); $i++) {
+        $dateStr = $daily['time'][$i];
         $code = $daily['weather_code'][$i];
-        $condition = isset($weatherCodes[$code]) ? $weatherCodes[$code] : 'Unknown';
-        $emoji = isset($weatherEmojis[$code]) ? $weatherEmojis[$code] : '🌤️';
-        
+        $condition = getOpenMeteoCondition($code);
+        $emoji = getOpenMeteoEmoji($code);
+
+        // کد وضعیت مخصوص روز (نزدیک ظهر) و مخصوص شب (نزدیک نیمه‌شب) همون روز، اگه داده‌ی ساعتی موجود باشه
+        $hoursForDate = $hourlyByDate[$dateStr] ?? [];
+        $dayCode = findClosestHourCode($hoursForDate, 13) ?? $code;
+        $nightCode = findClosestHourCode($hoursForDate, 0) ?? $code;
+
         $forecastDays[] = [
-            'date' => $daily['time'][$i],
+            'date' => $dateStr,
             'day' => [
                 'avgtemp_c' => round(($daily['temperature_2m_max'][$i] + $daily['temperature_2m_min'][$i]) / 2, 1),
                 'condition' => [
-                    'text' => $condition,
+                    'text' => getOpenMeteoCondition($dayCode),
                     'icon' => 'https://cdn.weatherapi.com/weather/64x64/day/113.png',
                 ],
-                'emoji' => $emoji,
+                'emoji' => getOpenMeteoEmoji($dayCode),
+            ],
+            'night' => [
+                'condition' => [
+                    'text' => getOpenMeteoCondition($nightCode),
+                    'icon' => 'https://cdn.weatherapi.com/weather/64x64/night/113.png',
+                ],
+                'emoji' => getOpenMeteoEmoji($nightCode),
             ],
             'astro' => [
                 'sunrise' => '06:00 AM',
@@ -472,18 +764,109 @@ function convertOpenMeteoToWeatherAPI($data, $lat, $lon, $lang) {
             'lat' => $lat,
             'lon' => $lon,
             'localtime' => date('Y-m-d H:i'),
-            'tz_id' => 'UTC',
+            'tz_id' => $data['timezone'] ?? 'UTC', // Open-Meteo با timezone=auto واقعاً این رو برمی‌گردونه
         ],
         'current' => [
             'temp_c' => $daily['temperature_2m_max'][0] ?? 20,
             'condition' => [
-                'text' => $weatherCodes[$daily['weather_code'][0]] ?? 'Clear',
+                'text' => getOpenMeteoCondition($daily['weather_code'][0] ?? 0),
                 'icon' => 'https://cdn.weatherapi.com/weather/64x64/day/113.png',
             ],
             'humidity' => 50,
             'wind_kph' => 10,
             'uv' => 5,
         ],
+        'forecast' => [
+            'forecastday' => $forecastDays,
+        ],
+    ];
+}
+
+// ====
+// تابع تبدیل Open-Meteo (ساعتی، برای امروز/فردا) به فرمت WeatherAPI
+// برخلاف تابع بالا، این یکی آرایه‌ی hour رو هم برای هر روز می‌سازه
+// (چون بخش «امروز»/«فردا» توی رابط کاربری به‌صورت ساعتی نمایش داده میشه)
+// ====
+function convertOpenMeteoHourlyToWeatherAPI($data, $lat, $lon, $lang) {
+    $hourly = $data['hourly'];
+    $daily = $data['daily'];
+    $current = $data['current'] ?? null;
+
+    // ساعت‌ها رو بر اساس روز تقویمی (YYYY-MM-DD) گروه‌بندی کن
+    $hoursByDate = [];
+    for ($i = 0; $i < count($hourly['time']); $i++) {
+        $isoTime = $hourly['time'][$i]; // مثل "2024-06-15T14:00"
+        $datePart = substr($isoTime, 0, 10);
+        $timeFormatted = str_replace('T', ' ', $isoTime); // فرمتی که فرانت‌اند انتظار داره: "2024-06-15 14:00"
+        $code = $hourly['weather_code'][$i];
+
+        $hoursByDate[$datePart][] = [
+            'time' => $timeFormatted,
+            'temp_c' => $hourly['temperature_2m'][$i],
+            'condition' => [
+                'text' => getOpenMeteoCondition($code),
+                'icon' => 'https://cdn.weatherapi.com/weather/64x64/day/113.png',
+            ],
+        ];
+    }
+
+    $forecastDays = [];
+    for ($i = 0; $i < count($daily['time']); $i++) {
+        $date = $daily['time'][$i];
+        $code = $daily['weather_code'][$i];
+
+        $forecastDays[] = [
+            'date' => $date,
+            'day' => [
+                'avgtemp_c' => round(($daily['temperature_2m_max'][$i] + $daily['temperature_2m_min'][$i]) / 2, 1),
+                'condition' => [
+                    'text' => getOpenMeteoCondition($code),
+                    'icon' => 'https://cdn.weatherapi.com/weather/64x64/day/113.png',
+                ],
+                'emoji' => getOpenMeteoEmoji($code),
+            ],
+            'astro' => [
+                'sunrise' => '06:00 AM',
+                'sunset' => '06:00 PM',
+            ],
+            'hour' => $hoursByDate[$date] ?? [],
+        ];
+    }
+
+    if ($current) {
+        $currentBlock = [
+            'temp_c' => $current['temperature_2m'] ?? ($daily['temperature_2m_max'][0] ?? 20),
+            'condition' => [
+                'text' => getOpenMeteoCondition($current['weather_code'] ?? 0),
+                'icon' => 'https://cdn.weatherapi.com/weather/64x64/day/113.png',
+            ],
+            'humidity' => $current['relative_humidity_2m'] ?? 50,
+            'wind_kph' => $current['wind_speed_10m'] ?? 10,
+            'uv' => 5, // Open-Meteo مقدار UV لحظه‌ای نمی‌ده؛ این یک مقدار پیش‌فرضه (مثل قبل)
+        ];
+    } else {
+        $currentBlock = [
+            'temp_c' => $daily['temperature_2m_max'][0] ?? 20,
+            'condition' => [
+                'text' => getOpenMeteoCondition($daily['weather_code'][0] ?? 0),
+                'icon' => 'https://cdn.weatherapi.com/weather/64x64/day/113.png',
+            ],
+            'humidity' => 50,
+            'wind_kph' => 10,
+            'uv' => 5,
+        ];
+    }
+
+    return [
+        'location' => [
+            'name' => 'Location',
+            'country' => 'Earth',
+            'lat' => $lat,
+            'lon' => $lon,
+            'localtime' => date('Y-m-d H:i'),
+            'tz_id' => $data['timezone'] ?? 'UTC',
+        ],
+        'current' => $currentBlock,
         'forecast' => [
             'forecastday' => $forecastDays,
         ],
