@@ -1,4 +1,4 @@
-//  ترجمه‌ها 
+//  ترجمه ها 
 const translations = {
     fa: {
         appTitle: 'پیش بینی آب و هوا',
@@ -14,7 +14,7 @@ const translations = {
         offsetHours: 'اختلاف {offset} ساعت با UTC',
         weekly: 'پیش بینی هفتگی',
         noData: 'اطلاعاتی برای روزهای آینده موجود نیست',
-        noFutureData: 'هیچ روز آینده‌ای در دسترس نیست',
+        noFutureData: 'هیچ روز آینده ای در دسترس نیست',
     },
     en: {
         appTitle: 'Weather Forecast',
@@ -52,19 +52,20 @@ const translations = {
 
 // نام روزهای هفته
 const weekDays = {
-    fa: ['یک‌شنبه', 'دوشنبه', 'سه‌شنبه', 'چهارشنبه', 'پنج‌شنبه', 'جمعه', 'شنبه'],
+    fa: ['یک شنبه', 'دوشنبه', 'سه شنبه', 'چهارشنبه', 'پنج شنبه', 'جمعه', 'شنبه'],
     en: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
     es: ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'],
 };
 
-// دیکشنری ترجمه وضعیت‌ها (انگلیسی به فارسی) 
+
+// دیکشنری ترجمه وضعیت ها (انگلیسی به فارسی) 
 const weatherTranslations = {
     'Sunny': 'آفتابی',
     'Partly cloudy': 'نیمه ابری',
     'Partly Cloudy': 'نیمه ابری',
     'Cloudy': 'ابری',
     'Overcast': 'تمام ابری',
-    'Mist': 'مه‌آلود',
+    'Mist': 'مه آلود',
     'Patchy rain nearby': 'باران پراکنده در نزدیکی',
     'Patchy light drizzle': 'نم نم باران پراکنده',
     'Light drizzle': 'نم نم باران',
@@ -74,26 +75,26 @@ const weatherTranslations = {
     'Moderate rain': 'باران متوسط',
     'Heavy rain at times': 'باران سنگین گاهی',
     'Heavy rain': 'باران سنگین',
-    'Light freezing rain': 'باران یخ‌زده خفیف',
-    'Moderate or heavy freezing rain': 'باران یخ‌زده متوسط یا سنگین',
-    'Light sleet': 'برف‌آب خفیف',
-    'Moderate or heavy sleet': 'برف‌آب متوسط یا سنگین',
+    'Light freezing rain': 'باران یخ زده خفیف',
+    'Moderate or heavy freezing rain': 'باران یخ زده متوسط یا سنگین',
+    'Light sleet': 'برف آب خفیف',
+    'Moderate or heavy sleet': 'برف آب متوسط یا سنگین',
     'Patchy light snow': 'برف خفیف پراکنده',
     'Light snow': 'برف خفیف',
     'Patchy moderate snow': 'برف متوسط پراکنده',
     'Moderate snow': 'برف متوسط',
     'Patchy heavy snow': 'برف سنگین پراکنده',
     'Heavy snow': 'برف سنگین',
-    'Ice pellets': 'دانه‌های یخ',
+    'Ice pellets': 'دانه های یخ',
     'Light rain shower': 'رگبار خفیف باران',
     'Moderate or heavy rain shower': 'رگبار متوسط یا سنگین باران',
-    'Torrential rain shower': 'رگبار سیل‌آسا',
-    'Light sleet showers': 'رگبار خفیف برف‌آب',
-    'Moderate or heavy sleet showers': 'رگبار متوسط یا سنگین برف‌آب',
+    'Torrential rain shower': 'رگبار سیل آسا',
+    'Light sleet showers': 'رگبار خفیف برف آب',
+    'Moderate or heavy sleet showers': 'رگبار متوسط یا سنگین برف آب',
     'Light snow showers': 'رگبار خفیف برف',
     'Moderate or heavy snow showers': 'رگبار متوسط یا سنگین برف',
-    'Light showers of ice pellets': 'رگبار خفیف دانه‌های یخ',
-    'Moderate or heavy showers of ice pellets': 'رگبار متوسط یا سنگین دانه‌های یخ',
+    'Light showers of ice pellets': 'رگبار خفیف دانه های یخ',
+    'Moderate or heavy showers of ice pellets': 'رگبار متوسط یا سنگین دانه های یخ',
     'Patchy light rain with thunder': 'باران خفیف پراکنده همراه با رعد',
     'Moderate or heavy rain with thunder': 'باران متوسط یا سنگین همراه با رعد',
     'Patchy light snow with thunder': 'برف خفیف پراکنده همراه با رعد',
@@ -107,9 +108,9 @@ const weatherTranslations = {
     'Patchy light rain in area with thunder': 'باران خفیف پراکنده همراه با رعد در منطقه',
     'Moderate drizzle': 'نم نم باران متوسط',
     'Heavy drizzle': 'نم نم باران سنگین',
-    'Light freezing drizzle': 'نم نم باران یخ‌زده خفیف',
-    'Heavy freezing drizzle': 'نم نم باران یخ‌زده سنگین',
-    'Snow grains': 'دانه‌های برف',
+    'Light freezing drizzle': 'نم نم باران یخ زده خفیف',
+    'Heavy freezing drizzle': 'نم نم باران یخ زده سنگین',
+    'Snow grains': 'دانه های برف',
     'Light snow shower': 'رگبار خفیف برف',
     'Heavy snow shower': 'رگبار سنگین برف',
     'Blowing snow': 'برف در حال وزیدن',
@@ -127,36 +128,36 @@ const weatherTranslations = {
     'Patchy light snow': 'برف خفیف پراکنده',
     'Patchy moderate snow': 'برف متوسط پراکنده',
     'Patchy heavy snow': 'برف سنگین پراکنده',
-    'Snow grains': 'دانه‌های برف',
-    'Ice pellets': 'دانه‌های یخ',
-    'Light ice pellets': 'دانه‌های یخ خفیف',
-    'Heavy ice pellets': 'دانه‌های یخ سنگین',
-    'Light sleet': 'برف‌آب خفیف',
-    'Moderate or heavy sleet': 'برف‌آب متوسط یا سنگین',
-    'Light sleet showers': 'رگبار خفیف برف‌آب',
-    'Moderate or heavy sleet showers': 'رگبار متوسط یا سنگین برف‌آب',
-    'Light showers of ice pellets': 'رگبار خفیف دانه‌های یخ',
-    'Moderate or heavy showers of ice pellets': 'رگبار متوسط یا سنگین دانه‌های یخ',
+    'Snow grains': 'دانه های برف',
+    'Ice pellets': 'دانه های یخ',
+    'Light ice pellets': 'دانه های یخ خفیف',
+    'Heavy ice pellets': 'دانه های یخ سنگین',
+    'Light sleet': 'برف آب خفیف',
+    'Moderate or heavy sleet': 'برف آب متوسط یا سنگین',
+    'Light sleet showers': 'رگبار خفیف برف آب',
+    'Moderate or heavy sleet showers': 'رگبار متوسط یا سنگین برف آب',
+    'Light showers of ice pellets': 'رگبار خفیف دانه های یخ',
+    'Moderate or heavy showers of ice pellets': 'رگبار متوسط یا سنگین دانه های یخ',
     'Light snow with thunder': 'برف خفیف همراه با رعد',
     'Moderate or heavy snow with thunder': 'برف متوسط یا سنگین همراه با رعد',
     'Patchy light snow with thunder': 'برف خفیف پراکنده همراه با رعد',
     'Moderate or heavy snow with thunder': 'برف متوسط یا سنگین همراه با رعد',
     'Smoky haze': 'دودآلود',
     'Thunderstorm': 'رعد و برق',
-    'Thundery outbreaks in nearby': 'رعد و برق‌های پراکنده در نزدیکی',
+    'Thundery outbreaks in nearby': 'رعد و برق های پراکنده در نزدیکی',
     'Thundery outbreaks possible': 'احتمال رعد و برق',
     'Patchy light rain with thunder': 'باران خفیف پراکنده همراه با رعد',
     'Moderate or heavy rain with thunder': 'باران متوسط یا سنگین همراه با رعد',
     'Light rain with thunder': 'باران خفیف همراه با رعد',
     'Squalls': 'تندباد',
-    'Freezing fog': 'مه یخ‌زده',
-    'Ice pellets': 'دانه‌های یخ',
-    'Heavy freezing rain': 'باران یخ‌زده سنگین',
-    'Light freezing rain': 'باران یخ‌زده خفیف',
-    'Patchy freezing drizzle nearby': 'نم نم باران یخ‌زده پراکنده در نزدیکی',
-    'Freezing drizzle': 'نم نم باران یخ‌زده',
-    'Moderate or heavy showers of ice pellets': 'رگبار متوسط یا سنگین دانه‌های یخ',
-    'Light showers of ice pellets': 'رگبار خفیف دانه‌های یخ',
+    'Freezing fog': 'مه یخ زده',
+    'Ice pellets': 'دانه های یخ',
+    'Heavy freezing rain': 'باران یخ زده سنگین',
+    'Light freezing rain': 'باران یخ زده خفیف',
+    'Patchy freezing drizzle nearby': 'نم نم باران یخ زده پراکنده در نزدیکی',
+    'Freezing drizzle': 'نم نم باران یخ زده',
+    'Moderate or heavy showers of ice pellets': 'رگبار متوسط یا سنگین دانه های یخ',
+    'Light showers of ice pellets': 'رگبار خفیف دانه های یخ',
     'Moderate or heavy snow with thunder': 'برف متوسط یا سنگین همراه با رعد',
     'Patchy light snow with thunder': 'برف خفیف پراکنده همراه با رعد',
     'Light snow with thunder': 'برف خفیف همراه با رعد',
@@ -166,12 +167,12 @@ const weatherTranslations = {
     'Smoke': 'دود',
     'Haze': 'غبار',
     'Fog': 'مه',
-    'Freezing fog': 'مه یخ‌زده',
+    'Freezing fog': 'مه یخ زده',
     'Mist': 'مه رقیق',
     'Overcast': 'تمام ابری',
 };
 
-// دیکشنری ترجمه وضعیت‌ها (اسپانیایی) 
+// دیکشنری ترجمه وضعیت ها (اسپانیایی) 
 const weatherTranslationsEs = {
     'Sunny': 'Soleado',
     'Partly cloudy': 'Parcialmente nublado',
@@ -265,7 +266,7 @@ const weatherTranslationsEs = {
     'Overcast': 'Cubierto',
 };
 
-//  دیکشنری آیکون‌های جایگزین 
+//  دیکشنری آیکون های جایگزین 
 const weatherIconMap = {
     'Patchy light drizzle': 'https://cdn.weatherapi.com/weather/64x64/day/266.png',
     'Heavy rain at times': 'https://cdn.weatherapi.com/weather/64x64/day/308.png',
@@ -277,7 +278,7 @@ const weatherIconMap = {
     'Heavy rain': 'https://cdn.weatherapi.com/weather/64x64/day/308.png',
 };
 
-// دیکشنری ایموجی‌ها بر اساس وضعیت
+// دیکشنری ایموجی ها بر اساس وضعیت
 const weatherEmojiMap = {
     'Sunny': '☀️',
     'Clear': '☀️',
@@ -361,13 +362,14 @@ const LoadingScreen = {
     retryText: document.getElementById('retryText'),
     langBtns: document.querySelectorAll('.loading-lang-btn'),
     isHidden: false,
+    currentKey: 'locating', // کلید پیامی که الان روی صفحه نشون داده می شه (برای رفرش کردنش موقع تغییر زبان)
     
-    // پیام‌ها به سه زبان
+    // پیام ها به سه زبان
     messages: {
         fa: {
             locating: 'در حال دریافت موقعیت مکانی...',
             loading: 'در حال دریافت اطلاعات آب و هوا...',
-            translating: 'در حال ترجمه و آماده‌سازی...',
+            translating: 'در حال ترجمه و آماده سازی...',
             errorLocation: 'خطا در دریافت موقعیت. لطفاً دسترسی موقعیت را فعال کنید.',
             errorWeather: 'خطا در دریافت اطلاعات آب و هوا. لطفاً دوباره تلاش کنید.',
             errorNetwork: 'خطا در اتصال به سرور. اتصال اینترنت خود را بررسی کنید.',
@@ -414,6 +416,7 @@ const LoadingScreen = {
     },
     
     setMessage(key, isError = false) {
+        this.currentKey = key;
         const t = this.messages[currentLang] || this.messages.en;
         this.message.textContent = t[key] || key;
         this.message.classList.toggle('error', isError);
@@ -430,17 +433,21 @@ const LoadingScreen = {
     }
 };
 
-// رویداد کلیک روی دکمه‌های زبان در لودینگ
+// رویداد کلیک روی دکمه های زبان در لودینگ
 LoadingScreen.langBtns.forEach(btn => {
     btn.addEventListener('click', function() {
         const lang = this.dataset.lang;
         currentLang = lang;
         LoadingScreen.updateLanguageButtons(lang);
         setLanguage(lang);
-        
-        // اگر خطا نمایش داده شده، دوباره تلاش کن
-        if (LoadingScreen.retryBtn.style.display !== 'none') {
-            LoadingScreen.setMessage('locating');
+
+        // پیام فعلی رو با همون کلید ولی زبان جدید دوباره نشون بده
+        // (قبلاً فقط توی حالت خطا این کارو می کرد، پس توی حالت عادی تغییر زبان اصلاً دیده نمی شد)
+        const wasError = LoadingScreen.retryBtn.style.display !== 'none';
+        LoadingScreen.setMessage(LoadingScreen.currentKey, wasError);
+
+        // اگر خطا نمایش داده شده بود، دوباره هم تلاش کن
+        if (wasError) {
             getLocation();
         }
     });
@@ -465,10 +472,15 @@ function setLanguage(lang) {
     DOM.langBtns.forEach(btn => {
         btn.classList.toggle('active', btn.dataset.lang === lang);
     });
-    if (currentCoords) {
-        fetchWeather(currentCoords.lat, currentCoords.lon, lang);
+
+    // هماهنگ سازی با صفحه ی لودینگ (اگه هنوز بازه)
+    LoadingScreen.updateLanguageButtons(lang);
+    if (!LoadingScreen.isHidden) {
+        const wasError = LoadingScreen.retryBtn.style.display !== 'none';
+        LoadingScreen.setMessage(LoadingScreen.currentKey, wasError);
     }
-    if (currentCoords && LoadingScreen.isHidden) {
+
+    if (currentCoords) {
         fetchWeather(currentCoords.lat, currentCoords.lon, lang);
     }
 }
@@ -493,7 +505,7 @@ searchInput.addEventListener('input', function() {
 });
 
 // تابع دریافت پیشنهادات از سرور
-let suggestController = null; // برای لغو درخواست‌های قدیمی‌تر
+let suggestController = null; // برای لغو درخواست های قدیمی تر
 
 function fetchCitySuggestions(query) {
     // اگر درخواست قبلی هنوز در حال اجراست، لغوش کن تا جواب قدیمی جای جواب جدید رو نگیره
@@ -604,9 +616,9 @@ searchInput.addEventListener('keypress', function(e) {
 });
 
 
-// راه‌اندازی 
+// راه اندازی 
 document.addEventListener('DOMContentLoaded', function() {
-    // راه‌اندازی
+    // راه اندازی
     setLanguage('fa');
 
     // تایمر محافظ: اگه بعد از ۳۰ ثانیه هنوز لودینگ بود، خطا نشون بده
@@ -630,13 +642,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
     DOM.citySearch.placeholder = translations.fa.searchPlaceholder;
 
-    // ساعت هر ثانیه زنده به‌روزرسانی میشه (کاملاً سمت کلاینت، بدون فراخوانی API)
+    // ساعت هر ثانیه زنده به روزرسانی میشه (کاملاً سمت کلاینت، بدون فراخوانی API)
     if (clockInterval) clearInterval(clockInterval);
     clockInterval = setInterval(tickClock, 1000);
 
-    // داده‌ی واقعی آب‌وهوا هر ۵ دقیقه یک‌بار در پس‌زمینه رفرش میشه.
-    // عمداً هر ثانیه رفرش نمیشه چون دمای واقعی این‌قدر سریع تغییر نمی‌کنه
-    // و این کار سهمیه‌ی API رو (به‌خصوص با مشکلات اتصال) خیلی سریع می‌سوزونه.
+    // داده ی واقعی آب وهوا هر ۵ دقیقه یک بار در پس زمینه رفرش میشه.
+    // عمداً هر ثانیه رفرش نمیشه چون دمای واقعی این قدر سریع تغییر نمی کنه
+    // و این کار سهمیه ی API رو (به خصوص با مشکلات اتصال) خیلی سریع می سوزونه.
     if (weatherRefreshInterval) clearInterval(weatherRefreshInterval);
     weatherRefreshInterval = setInterval(() => {
         if (currentCoords) {
@@ -646,7 +658,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 
-// دریافت داده‌های امروز و فردا
+// دریافت داده های امروز و فردا
 function fetchWeather(lat, lon, lang, city = null, forceRefresh = false) {
     let url = `backend.php?type=weather&lang=${lang}`;
     if (city) {
@@ -670,7 +682,7 @@ function fetchWeather(lat, lon, lang, city = null, forceRefresh = false) {
             const age = Date.now() - data.timestamp;
             if (age < 30 * 60 * 1000) {
                 displayWeather(data.weather);
-                // به‌روزرسانی مختصات از کش
+                // به روزرسانی مختصات از کش
                 if (data.weather.location) {
                     currentCoords = {
                         lat: data.weather.location.lat,
@@ -681,12 +693,12 @@ function fetchWeather(lat, lon, lang, city = null, forceRefresh = false) {
                 return;
             }
         } catch (e) {
-            console.warn('داده‌ی کش‌شده خراب بود، نادیده گرفته شد:', e);
+            console.warn('داده ی کش شده خراب بود، نادیده گرفته شد:', e);
         }
     }
 
     // اگر مختصات از قبل داریم (جستجوی شهر با lat/lon، نه با نام)،
-    // fetchWeekly رو هم‌زمان با fetchWeather شروع کن، نه بعد از اتمام اون
+    // fetchWeekly رو هم زمان با fetchWeather شروع کن، نه بعد از اتمام اون
     // (این دو درخواست به هم وابسته نیستند مگر وقتی جستجو فقط با نام شهر انجام شده)
     if (lat && lon) {
         fetchWeekly(lat, lon, lang);
@@ -697,12 +709,12 @@ function fetchWeather(lat, lon, lang, city = null, forceRefresh = false) {
         .then(data => {
             if (data.error) {
                 if (!LoadingScreen.isHidden) {
-                    // تا وقتی صفحه‌ی لودینگ فعاله، هیچ alert ای نشون نده — خطا رو خودِ لودینگ نشون می‌ده
+                    // تا وقتی صفحه ی لودینگ فعاله، هیچ alert ای نشون نده — خطا رو خودِ لودینگ نشون می ده
                     LoadingScreen.setMessage('errorWeather', true);
                 } else {
                     // بعد از لودینگ (مثلاً جستجوی شهر جدید)، همچنان alert بزن ولی به زبان خودِ کاربر
                     const alertMsgs = {
-                        fa: 'خطا: شهر پیدا نشد یا مشکلی در دریافت اطلاعات آب‌وهوا پیش اومد.',
+                        fa: 'خطا: شهر پیدا نشد یا مشکلی در دریافت اطلاعات آب وهوا پیش اومد.',
                         en: 'Error: city not found or a problem occurred fetching weather data.',
                         es: 'Error: ciudad no encontrada o hubo un problema al obtener los datos del clima.'
                     };
@@ -711,7 +723,7 @@ function fetchWeather(lat, lon, lang, city = null, forceRefresh = false) {
                 return;
             }
             
-            // به‌روزرسانی currentCoords با مختصات جدید
+            // به روزرسانی currentCoords با مختصات جدید
             const hadCoordsBefore = !!(lat && lon);
             if (data.location) {
                 currentCoords = {
@@ -738,7 +750,7 @@ function fetchWeather(lat, lon, lang, city = null, forceRefresh = false) {
             }
             
             // اگر جستجو با نام شهر بود (مختصات از قبل معلوم نبود)،
-            // فقط بعد از دریافت مختصات از پاسخ weather می‌تونیم weekly رو بگیریم
+            // فقط بعد از دریافت مختصات از پاسخ weather می تونیم weekly رو بگیریم
             if (!hadCoordsBefore && currentCoords) {
                 fetchWeekly(currentCoords.lat, currentCoords.lon, lang);
             }
@@ -749,7 +761,7 @@ function fetchWeather(lat, lon, lang, city = null, forceRefresh = false) {
         });
 }
 
-//دریافت داده‌های هفتگی (Open-Meteo) 
+//دریافت داده های هفتگی (Open-Meteo) 
 function fetchWeekly(lat, lon, lang) {
     const url = `backend.php?type=weekly&lat=${lat}&lon=${lon}&lang=${lang}`;
     
@@ -757,7 +769,7 @@ function fetchWeekly(lat, lon, lang) {
         .then(res => res.json())
         .then(data => {
             if (data.error) {
-                console.warn('خطا در دریافت داده‌های هفتگی:', data.error);
+                console.warn('خطا در دریافت داده های هفتگی:', data.error);
                 // Fallback: از WeatherAPI برای ۳ روز استفاده کن
                 fallbackWeekly(lat, lon, lang);
                 return;
@@ -767,12 +779,12 @@ function fetchWeekly(lat, lon, lang) {
             if (data.forecast && data.forecast.forecastday) {
                 displayWeekly(data.forecast.forecastday);
             } else {
-                console.warn('ساختار داده‌های هفتگی نامعتبر:', data);
+                console.warn('ساختار داده های هفتگی نامعتبر:', data);
                 fallbackWeekly(lat, lon, lang);
             }
         })
         .catch(err => {
-            console.error('خطا در دریافت داده‌های هفتگی:', err);
+            console.error('خطا در دریافت داده های هفتگی:', err);
             fallbackWeekly(lat, lon, lang);
         });
 }
@@ -797,7 +809,7 @@ function fallbackWeekly(lat, lon, lang) {
 }
 
 
-//  نمایش داده‌ها 
+//  نمایش داده ها 
 function displayWeather(data) {
     const current = data.current;
     const location = data.location;
@@ -821,7 +833,7 @@ function displayWeather(data) {
     DOM.windSpeed.textContent = `${Math.round(current.wind_kph)} km/h`;
     DOM.uvIndex.textContent = current.uv || '0';
 
-    // به‌روزرسانی نقشه
+    // به روزرسانی نقشه
     updateMap(location.lat, location.lon, location.name);
 
     // ساعت محلی و اختلاف
@@ -844,13 +856,13 @@ function displayWeather(data) {
     if (forecast && forecast.length > 0) {
         displayWeekly(forecast);
     } else {
-        document.getElementById('weekly-container').innerHTML = '<p style="text-align:center;opacity:0.6;padding:20px;">داده‌ای موجود نیست</p>';
+        document.getElementById('weekly-container').innerHTML = '<p style="text-align:center;opacity:0.6;padding:20px;">داده ای موجود نیست</p>';
     }
 
 }
 
 //  ترجمه وضعیت 
-// نکته‌ی امنیتی: قبل از قرار دادن هر متن دینامیک توی innerHTML، این تابع کاراکترهای خطرناک HTML رو escape می‌کنه
+// نکته ی امنیتی: قبل از قرار دادن هر متن دینامیک توی innerHTML، این تابع کاراکترهای خطرناک HTML رو escape می کنه
 function escapeHtml(str) {
     if (str === null || str === undefined) return '';
     return String(str)
@@ -861,10 +873,15 @@ function escapeHtml(str) {
         .replace(/'/g, '&#039;');
 }
 
+// ترجمه وضعیت 
 function translateCondition(text) {
     if (currentLang === 'fa') {
         return weatherTranslations[text] || text;
     }
+    if (currentLang === 'es') {
+        return weatherTranslationsEs[text] || text;
+    }
+    // برای انگلیسی، همون متن اصلی رو برگردون
     return text;
 }
 
@@ -875,7 +892,7 @@ function getWeatherIcon(conditionText, defaultIcon) {
     }
     // اگر آیکون پیش فرض شکسته بود، از یک آیکون پیش فرض استفاده کن
     if (!defaultIcon || defaultIcon.includes('404')) {
-        return 'https://cdn.weatherapi.com/weather/64x64/day/113.png'; // آیکون پیش‌فرض
+        return 'https://cdn.weatherapi.com/weather/64x64/day/113.png'; // آیکون پیش فرض
     }
     return defaultIcon;
 }
@@ -885,7 +902,7 @@ function getWeatherEmoji(conditionText) {
     if (weatherEmojiMap[conditionText]) {
         return weatherEmojiMap[conditionText];
     }
-    // جستجوی جزئی (برای وضعیت‌هایی که ممکنه دقیقا توی دیکشنری نباشن)
+    // جستجوی جزئی (برای وضعیت هایی که ممکنه دقیقا توی دیکشنری نباشن)
     const text = conditionText.toLowerCase();
     if (text.includes('sun') || text.includes('clear')) return '☀️';
     if (text.includes('partly cloud')) return '⛅';
@@ -899,10 +916,10 @@ function getWeatherEmoji(conditionText) {
 }
 
 //  ساعت زنده (تیک هر ثانیه) و اختلاف زمانی 
-let currentTzId = null; // آخرین tz_id دریافت‌شده از API (مثل "Asia/Tehran")
+let currentTzId = null; // آخرین tz_id دریافت شده از API (مثل "Asia/Tehran")
 
-// محاسبه اختلاف یک منطقه زمانی با UTC بر حسب دقیقه، در لحظه‌ی داده‌شده
-// (این روش با تغییر ساعت تابستانی/زمستانی هم به‌درستی سازگار است)
+// محاسبه اختلاف یک منطقه زمانی با UTC بر حسب دقیقه، در لحظه ی داده شده
+// (این روش با تغییر ساعت تابستانی/زمستانی هم به درستی سازگار است)
 function getTzOffsetMinutes(tz, date) {
     const dtf = new Intl.DateTimeFormat('en-US', {
         timeZone: tz, hour12: false,
@@ -920,14 +937,14 @@ function getTzOffsetMinutes(tz, date) {
 function updateClock(timezone) {
     if (!timezone) return;
     currentTzId = timezone;
-    tickClock(); // بلافاصله یک‌بار به‌روزرسانی کن، نه فقط منتظر تیک بعدی بمون
+    tickClock(); // بلافاصله یک بار به روزرسانی کن، نه فقط منتظر تیک بعدی بمون
 }
 
 function tickClock() {
     if (!currentTzId) return;
     const now = new Date();
 
-    // ساعت زنده‌ی محل (HH:MM:SS) با استفاده از timezone واقعی
+    // ساعت زنده ی محل (HH:MM:SS) با استفاده از timezone واقعی
     DOM.localTime.textContent = new Intl.DateTimeFormat('en-GB', {
         timeZone: currentTzId,
         hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false
@@ -949,7 +966,7 @@ function tickClock() {
     }
     DOM.timeOffset.textContent = offsetText;
 
-    // پس‌زمینه و تم هم هر ثانیه بر اساس همین ساعت محلی به‌روزرسانی میشه
+    // پس زمینه و تم هم هر ثانیه بر اساس همین ساعت محلی به روزرسانی میشه
     setThemeByTime();
 }
 
@@ -969,7 +986,7 @@ function displayHours(container, hours) {
         card.className = 'hour-card';
         card.style.animationDelay = `${index * 0.03}s`;
 
-        // نکته‌ی امنیتی: هرچند این مقادیر از API آب‌وهوا میان (نه مستقیم از کاربر)،
+        // نکته ی امنیتی: هرچند این مقادیر از API آب وهوا میان (نه مستقیم از کاربر)،
         // برای احتیاط (defense in depth) قبل از قرار گرفتن توی innerHTML، escape میشن
         card.innerHTML = `
             <div class="time">${escapeHtml(timeStr)}</div>
@@ -1075,8 +1092,8 @@ function hexToRgb(hex) {
     ];
 }
 
-// درون‌یابی خطی بین دو رنگ HEX با نسبت t (بین ۰ و ۱) -> رشته‌ی "rgb(r, g, b)"
-// همین باعث میشه رنگ به‌جای «یهو عوض شدن»، به آرامی و بدون آزار چشم تغییر کنه
+// درون یابی خطی بین دو رنگ HEX با نسبت t (بین ۰ و ۱) -> رشته ی "rgb(r, g, b)"
+// همین باعث میشه رنگ به جای «یهو عوض شدن»، به آرامی و بدون آزار چشم تغییر کنه
 function lerpColor(hexA, hexB, t) {
     t = Math.max(0, Math.min(1, t));
     const [r1, g1, b1] = hexToRgb(hexA);
@@ -1087,7 +1104,7 @@ function lerpColor(hexA, hexB, t) {
     return `rgb(${r}, ${g}, ${b})`;
 }
 
-// ساعت محلی (با اعشار دقیقه) در منطقه‌ی زمانی داده‌شده، مثلاً ۶:۳۰ -> 6.5
+// ساعت محلی (با اعشار دقیقه) در منطقه ی زمانی داده شده، مثلاً ۶:۳۰ -> 6.5
 function getLocalHourDecimal(date, tzId) {
     const parts = new Intl.DateTimeFormat('en-US', {
         timeZone: tzId || undefined,
@@ -1099,9 +1116,9 @@ function getLocalHourDecimal(date, tzId) {
     return parseInt(parts.hour, 10) + parseInt(parts.minute, 10) / 60;
 }
 
-//  محاسبه‌ی میزان «شب بودن» به‌صورت پیوسته: 0 = روز کامل، 1 = شب کامل 
-// بین ساعت DAWN_START تا DAWN_END به‌آرامی از شب به روز میره (نزدیک ۵ صبح)
-// بین ساعت DUSK_START تا DUSK_END به‌آرامی از روز به شب میره (نزدیک ۶ عصر)
+//  محاسبه ی میزان «شب بودن» به صورت پیوسته: 0 = روز کامل، 1 = شب کامل 
+// بین ساعت DAWN_START تا DAWN_END به آرامی از شب به روز میره (نزدیک ۵ صبح)
+// بین ساعت DUSK_START تا DUSK_END به آرامی از روز به شب میره (نزدیک ۶ عصر)
 function getNightFactor(hourDecimal) {
     const DAWN_START = 4, DAWN_END = 6;    // طلوع: ۴ تا ۶ صبح
     const DUSK_START = 17, DUSK_END = 19;  // غروب: ۵ تا ۷ عصر، مرکز آن ۶ عصر
@@ -1113,64 +1130,64 @@ function getNightFactor(hourDecimal) {
         return 0; // روز کامل
     }
     if (hourDecimal < DAWN_END) {
-        // در حال طلوع: مقدار از ۱ (شب) به ۰ (روز) کاهش پیدا می‌کنه
+        // در حال طلوع: مقدار از ۱ (شب) به ۰ (روز) کاهش پیدا می کنه
         return 1 - (hourDecimal - DAWN_START) / (DAWN_END - DAWN_START);
     }
-    // در حال غروب: مقدار از ۰ (روز) به ۱ (شب) افزایش پیدا می‌کنه
+    // در حال غروب: مقدار از ۰ (روز) به ۱ (شب) افزایش پیدا می کنه
     return (hourDecimal - DUSK_START) / (DUSK_END - DUSK_START);
 }
 
-// میزان «تیرگی اضافه‌ی نیمه‌شب»: ۰ به‌جز نزدیکی‌های ۰۰:۰۰، و دقیقاً در ۰۰:۰۰ به بیشترین مقدار (۱) می‌رسه
-// این باعث میشه شب یکدست نباشه؛ نزدیک نیمه‌شب کمی تیره‌تر از مثلاً ساعت ۸ شب یا ۳ بامداد به‌نظر بیاد
+// میزان «تیرگی اضافه ی نیمه شب»: ۰ به جز نزدیکی های ۰۰:۰۰، و دقیقاً در ۰۰:۰۰ به بیشترین مقدار (۱) می رسه
+// این باعث میشه شب یکدست نباشه؛ نزدیک نیمه شب کمی تیره تر از مثلاً ساعت ۸ شب یا ۳ بامداد به نظر بیاد
 function getMidnightDepth(hourDecimal) {
-    const WINDOW = 3; // فقط بین ۲۱:۰۰ و ۰۳:۰۰ این افکت اعمال میشه (۳ ساعت قبل/بعد از نیمه‌شب)
-    let distance = Math.min(hourDecimal, 24 - hourDecimal); // فاصله تا ۰۰:۰۰ با در نظر گرفتن چرخش شبانه‌روز
+    const WINDOW = 3; // فقط بین ۲۱:۰۰ و ۰۳:۰۰ این افکت اعمال میشه (۳ ساعت قبل/بعد از نیمه شب)
+    let distance = Math.min(hourDecimal, 24 - hourDecimal); // فاصله تا ۰۰:۰۰ با در نظر گرفتن چرخش شبانه روز
     if (distance >= WINDOW) {
         return 0;
     }
     return 1 - (distance / WINDOW);
 }
 
-// میزان «شب بودن» مخصوص رنگ متن: از ۴ تا ۵ صبح رنگ‌پریده (حالت شب) می‌مونه،
-// بین ۵ تا ۶ صبح به آرامی به سمت تیره (حالت روز) میره، و از ۶ صبح به بعد کاملاً تیره‌ست.
+// میزان «شب بودن» مخصوص رنگ متن: از ۴ تا ۵ صبح رنگ پریده (حالت شب) می مونه،
+// بین ۵ تا ۶ صبح به آرامی به سمت تیره (حالت روز) میره، و از ۶ صبح به بعد کاملاً تیره ست.
 function getTextNightFactor(hourDecimal) {
     const PALE_HOLD_START = 4, RAMP_START = 5, RAMP_END = 6;
 
     if (hourDecimal >= PALE_HOLD_START && hourDecimal < RAMP_START) {
-        return 1; // رنگ‌پریده (حالت شب) — بین ۴ تا ۵ صبح
+        return 1; // رنگ پریده (حالت شب) — بین ۴ تا ۵ صبح
     }
     if (hourDecimal >= RAMP_START && hourDecimal <= RAMP_END) {
-        // گذار نرم از رنگ‌پریده به تیره — بین ۵ تا ۶ صبح
+        // گذار نرم از رنگ پریده به تیره — بین ۵ تا ۶ صبح
         return 1 - (hourDecimal - RAMP_START) / (RAMP_END - RAMP_START);
     }
-    // بیرون از این بازه‌ها، دقیقاً هماهنگ با پس‌زمینه (که خودش هم در همین حوالی صبح می‌شه)
+    // بیرون از این بازه ها، دقیقاً هماهنگ با پس زمینه (که خودش هم در همین حوالی صبح می شه)
     return getNightFactor(hourDecimal);
 }
 
-//  تنظیم تم و محو شدن پیوسته‌ی پس‌زمینه و متن، بر اساس ساعتِ محلِ شهر انتخاب‌شده (نه دستگاه کاربر) 
+//  تنظیم تم و محو شدن پیوسته ی پس زمینه و متن، بر اساس ساعتِ محلِ شهر انتخاب شده (نه دستگاه کاربر) 
 function setThemeByTime() {
     const now = new Date();
     const hourDecimal = getLocalHourDecimal(now, currentTzId);
 
-    const nightFactor = getNightFactor(hourDecimal);       // 0..1 (روز کامل تا شب کامل) - برای پس‌زمینه
-    const midnightDepth = getMidnightDepth(hourDecimal);   // 0..1 (فقط نزدیک نیمه‌شب غیرصفره)
-    const textNightFactor = getTextNightFactor(hourDecimal); // 0..1 - برای رنگ متن (زمان‌بندی جداگانه‌ی صبح)
+    const nightFactor = getNightFactor(hourDecimal);       // 0..1 (روز کامل تا شب کامل) - برای پس زمینه
+    const midnightDepth = getMidnightDepth(hourDecimal);   // 0..1 (فقط نزدیک نیمه شب غیرصفره)
+    const textNightFactor = getTextNightFactor(hourDecimal); // 0..1 - برای رنگ متن (زمان بندی جداگانه ی صبح)
 
-    // محو شدن پیوسته‌ی خودِ پس‌زمینه (همون منطق قبلی)
+    // محو شدن پیوسته ی خودِ پس زمینه (همون منطق قبلی)
     document.body.style.setProperty('--night-opacity', nightFactor.toFixed(3));
 
-    // رنگ گرادینت شب رو کمی تیره‌تر کن، فقط نزدیک نیمه‌شب (حداکثر ۶۰٪ به سمت تقریباً مشکی)
+    // رنگ گرادینت شب رو کمی تیره تر کن، فقط نزدیک نیمه شب (حداکثر ۶۰٪ به سمت تقریباً مشکی)
     const nightC1 = lerpColor('#0a0a2a', '#000006', midnightDepth * 0.6);
     const nightC2 = lerpColor('#1a1a3e', '#04040c', midnightDepth * 0.6);
     document.body.style.setProperty('--night-c1', nightC1);
     document.body.style.setProperty('--night-c2', nightC2);
 
-    // رنگ متن (تیتر‌ها، اسم شهر و ...) هم به‌آرامی و پیوسته بین رنگ روز و شب تغییر می‌کنه
-    // تا هنگام تغییر تم، چشم اذیت نشه (به‌جای پرش ناگهانی رنگ)
-    // رنگ متن تم شب رنگ‌پریده‌تر شد (نزدیک‌تر به سفید، به‌جای بنفش-آبی پررنگ قبلی)
+    // رنگ متن (تیتر ها، اسم شهر و ...) هم به آرامی و پیوسته بین رنگ روز و شب تغییر می کنه
+    // تا هنگام تغییر تم، چشم اذیت نشه (به جای پرش ناگهانی رنگ)
+    // رنگ متن تم شب رنگ پریده تر شد (نزدیک تر به سفید، به جای بنفش-آبی پررنگ قبلی)
     document.body.style.setProperty('--text-color', lerpColor('#1a1a2e', '#f0f0f8', textNightFactor));
 
-    // کلاس تم هم برای پس‌زمینه‌ی کارت‌ها به‌روزرسانی می‌شود (پلکانی، نه پیوسته)
+    // کلاس تم هم برای پس زمینه ی کارت ها به روزرسانی می شود (پلکانی، نه پیوسته)
     let theme = 'day';
     if (nightFactor >= 0.75) {
         theme = 'night';
@@ -1187,7 +1204,7 @@ function applyWeatherEffect(condition) {
         return;
     }
     
-    // پاک کردن افکت‌های قبلی
+    // پاک کردن افکت های قبلی
     container.innerHTML = '';
     if (rainInterval) {
         clearInterval(rainInterval);
@@ -1260,7 +1277,7 @@ function applyWeatherEffect(condition) {
     }
 }
 
-//  رویدادهای دکمه‌های زبان 
+//  رویدادهای دکمه های زبان 
 DOM.langBtns.forEach(btn => {
     btn.addEventListener('click', function() {
         const lang = this.dataset.lang;
@@ -1315,7 +1332,7 @@ function displayWeekly(forecastDays) {
         const translatedCondition = translateCondition(conditionText);
 
         // وضعیت شب حالا واقعاً جدا از روزه (اگه از Open-Meteo اومده باشه).
-        // فقط اگه این داده موجود نبود (مثلاً توی حالت fallback سه‌روزه‌ی WeatherAPI)، همون وضعیت روز رو نشون بده
+        // فقط اگه این داده موجود نبود (مثلاً توی حالت fallback سه روزه ی WeatherAPI)، همون وضعیت روز رو نشون بده
         const nightConditionText = day.night?.condition?.text || conditionText;
         const translatedNightCondition = translateCondition(nightConditionText);
         
