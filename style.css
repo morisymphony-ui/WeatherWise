@@ -17,7 +17,7 @@ body {
 
 /* لایه های پس زمینه برای transition نرم */
 /* ترتیب لایه ها از پایین به بالا: روز (پایین ترین) -> شب (روی روز) -> افکت های آب وهوا -> بقیه ی محتوای صفحه
-   عمداً از اعداد خیلی منفی استفاده شده تا همیشه زیر همه چیز بمونن، حتی اگه بعداً جای دیگه ای z-index اضافه بشه */
+   عمدا از اعداد خیلی منفی استفاده شده تا همیشه زیر همه چیز بمونن، حتی اگه بعدا جای دیگه ای z-index اضافه بشه */
 body::before {
     content: '';
     position: fixed;
@@ -47,13 +47,8 @@ body::after {
 }
 
 /* تم ها: کلاس day/sunset/night فقط پس زمینه ی کارت ها رو کنترل می کنه (تغییر پلکانی).
-   محو شدن پس زمینه ی اصلی و رنگ متن (تیتر ها، اسم شهر و ...) کاملاً پیوسته و از طریق
+   محو شدن پس زمینه ی اصلی و رنگ متن (تیتر ها، اسم شهر و ...) کاملا پیوسته و از طریق
    --night-opacity و --text-color بالا کنترل میشه، تا موقع تغییر تم چشم اذیت نشه */
-body.night .hour-card {
-    background: rgba(30, 30, 70, 0.7);
-    backdrop-filter: blur(8px);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
-}
 body.night header {
     border-bottom-color: rgba(255, 255, 255, 0.15);
 }
@@ -79,10 +74,6 @@ body.night .lang-btn.active {
     border-color: #4a7db5;
 }
 
-body.sunset .hour-card {
-    background: rgba(40, 30, 80, 0.7);
-    backdrop-filter: blur(8px);
-}
 
 /* CONTAINER */
 .container {
@@ -252,7 +243,7 @@ body.night #map {
 
 /* CURRENT WEATHER */
 #current-weather {
-    background: rgba(255, 255, 255, 0.3);
+    background: color-mix(in srgb, rgba(35, 35, 75, 0.55) var(--card-night-pct, 0%), rgba(255, 255, 255, 0.3));
     backdrop-filter: blur(12px);
     border-radius: 20px;
     padding: 25px 30px;
@@ -270,6 +261,11 @@ body.night #map {
 .location-info h2 {
     font-size: 2rem;
     font-weight: 600;
+}
+.city-name-translated {
+    font-size: 1.1rem;
+    font-weight: 400;
+    opacity: 0.65;
 }
 .location-info p {
     opacity: 0.7;
@@ -309,7 +305,7 @@ body.night #map {
 
 /* CHART */
 #chart-section {
-    background: rgba(255, 255, 255, 0.25);
+    background: color-mix(in srgb, rgba(20, 20, 50, 0.5) var(--card-night-pct, 0%), rgba(255, 255, 255, 0.25));
     backdrop-filter: blur(8px);
     border-radius: 20px;
     padding: 20px 25px;
@@ -324,9 +320,6 @@ body.night #map {
 .chart-container {
     position: relative;
     height: 200px;
-}
-body.night #chart-section {
-    background: rgba(20, 20, 50, 0.4);
 }
 
 /* HOUR CARDS */
@@ -344,13 +337,13 @@ section h2 {
     margin-bottom: 35px;
 }
 .hour-card {
-    background: rgba(255, 255, 255, 0.45);
+    background: color-mix(in srgb, rgba(45, 45, 95, 0.65) var(--card-night-pct, 0%), rgba(255, 255, 255, 0.45));
     backdrop-filter: blur(6px);
     padding: 14px 8px;
     border-radius: 16px;
     text-align: center;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     border: 1px solid rgba(255, 255, 255, 0.1);
     animation: fadeUp 0.5s ease forwards;
     opacity: 0;
@@ -407,14 +400,14 @@ section h2 {
 }
 
 .weekly-card {
-    background: rgba(255, 255, 255, 0.35);
+    background: color-mix(in srgb, rgba(45, 45, 95, 0.6) var(--card-night-pct, 0%), rgba(255, 255, 255, 0.35));
     backdrop-filter: blur(6px);
     border-radius: 16px;
     padding: 12px 10px;
     text-align: center;
     border: 1px solid rgba(255, 255, 255, 0.1);
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
-    transition: all 0.3s ease;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
     animation: fadeUp 0.5s ease forwards;
     opacity: 0;
     height: 200px;
@@ -462,13 +455,6 @@ section h2 {
     gap: 15px;
 }
 
-body.night .weekly-card {
-    background: rgba(30, 30, 70, 0.6);
-    border-color: rgba(255, 255, 255, 0.05);
-}
-body.sunset .weekly-card {
-    background: rgba(40, 30, 80, 0.6);
-}
 
 /* RESPONSIVE WEEKLY */
 @media (max-width: 780px) {
@@ -564,6 +550,7 @@ body.sunset .weekly-card {
         opacity: 0.7;
     }
 }
+
 /* پرتوهای خورشید
 .sun-ray {
     position: absolute;
@@ -581,25 +568,110 @@ body.sunset .weekly-card {
     to { transform: rotate(360deg); }
 } */
 
+
 /* ابر */
 .cloud-effect {
     position: absolute;
-    font-size: 4rem;
-    opacity: 0.2;
-    animation: floatCloud 25s linear infinite;
+    background: #fff;
+    border-radius: 50px;
+    animation: floatCloud linear infinite;
+    will-change: transform;
+}
+/* دو تا دایره ی روی هم که به مستطیل گردگوشه، شکل ابرِ واقعی و پفی می ده */
+.cloud-effect::before,
+.cloud-effect::after {
+    content: '';
+    position: absolute;
+    background: inherit;
+    border-radius: 50%;
+}
+.cloud-effect::before {
+    width: 60%;
+    height: 150%;
+    top: -65%;
+    left: 8%;
+}
+.cloud-effect::after {
+    width: 45%;
+    height: 120%;
+    top: -45%;
+    right: 10%;
 }
 @keyframes floatCloud {
     0% {
-        transform: translateX(-20vw);
-        opacity: 0.1;
-    }
-    50% {
-        opacity: 0.3;
+        transform: translateX(-25vw);
     }
     100% {
-        transform: translateX(120vw);
-        opacity: 0.1;
+        transform: translateX(125vw);
     }
+}
+
+/* شب: ابرها کمی خاکستری تر به نظر برسن، نه سفیدِ خیره کننده روی پس زمینه ی تاریک */
+@media (prefers-color-scheme: dark) {
+    .cloud-effect {
+        background: #c8ccd6;
+    }
+}
+
+/* برف */
+.snow-flake {
+    position: absolute;
+    top: -10px;
+    background: #fff;
+    border-radius: 50%;
+    box-shadow: 0 0 6px rgba(255, 255, 255, 0.9), 0 0 2px rgba(120, 160, 210, 0.6);
+    animation: snowFall linear infinite;
+    will-change: transform;
+}
+@keyframes snowFall {
+    0%   { transform: translate(0, -5vh); }
+    50%  { transform: translate(var(--sway, 20px), 55vh); }
+    100% { transform: translate(calc(var(--sway, 20px) * -0.5), 108vh); }
+}
+
+/* ابر طوفانی */
+.cloud-effect.storm-cloud {
+    background: #4a5060;
+}
+@media (prefers-color-scheme: dark) {
+    .cloud-effect.storm-cloud {
+        background: #2c303b;
+    }
+}
+
+/* رعد و برق */
+.lightning-flash {
+    position: absolute;
+    inset: 0;
+    background: rgba(255, 255, 255, 0.85);
+    opacity: 0;
+}
+.lightning-flash.active {
+    animation: lightningFlash 0.7s ease-out;
+}
+@keyframes lightningFlash {
+    0%   { opacity: 0; }
+    6%   { opacity: 0.75; }
+    14%  { opacity: 0.1; }
+    22%  { opacity: 0.55; }
+    40%  { opacity: 0; }
+    100% { opacity: 0; }
+}
+.lightning-bolt {
+    position: absolute;
+    top: 0;
+    width: 90px;
+    height: 60vh;
+    background: linear-gradient(#fff, #fff7b0);
+    clip-path: polygon(55% 0, 20% 48%, 46% 48%, 30% 100%, 80% 40%, 52% 40%, 75% 0);
+    filter: drop-shadow(0 0 12px rgba(255, 255, 200, 0.95));
+    animation: boltFade 0.45s ease-out forwards;
+}
+@keyframes boltFade {
+    0%   { opacity: 1; }
+    30%  { opacity: 0.2; }
+    45%  { opacity: 1; }
+    100% { opacity: 0; }
 }
 
 /* RESPONSIVE */
@@ -717,7 +789,7 @@ body.sunset .weekly-card {
 }
 
 
-/* ===== استایل جعبه پیشنهادات ===== */
+/* استایل جعبه پیشنهادات */
 input[list]::-webkit-calendar-picker-indicator {
     display: none !important;
 }
@@ -803,6 +875,8 @@ body.night datalist option:hover {
     align-items: center;
     justify-content: center;
     background: linear-gradient(145deg, #e0f0ff, #b8d4f0);
+    /* رنگ متن ثابت و مستقل از تم ساعت (--text-color)؛ وگرنه از body ارث می بره و موقع لود فید میشه */
+    color: #1a1a2e;
     transition: opacity 1s ease, visibility 1s ease;
 }
 
@@ -811,7 +885,7 @@ body.night datalist option:hover {
     visibility: hidden;
 }
 
-/* تم شب بر اساس تنظیمات سیستم کاربر */
+/* تم شب براساس تنظیمات سیستم کاربر */
 @media (prefers-color-scheme: dark) {
     .loading-screen {
         background: linear-gradient(145deg, #0a0a2a, #1a1a3e);

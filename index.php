@@ -15,6 +15,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <link rel="stylesheet" href="style.css?v=2">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
 </head>
 <body>
 

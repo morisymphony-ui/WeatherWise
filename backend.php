@@ -1,23 +1,20 @@
 <?php
 require_once 'config.php';
 
-// ====
+
 // سخت گیری امنیتی: خطاهای PHP هرگز مستقیم به کاربر نمایش داده نشن
 // (فقط توی لاگ سرور ثبت می شن؛ جلوگیری از لو رفتن مسیر فایل ها/ساختار سرور)
-// ====
 error_reporting(E_ALL);
 ini_set('display_errors', '0');
 
-// ====
+
 // بارگذاری Geographer (در صورت وجود)
-// ====
 use MenaraSolutions\Geographer\Earth;
 
 header('Content-Type: application/json');
 
-// ====
+
 // دریافت و اعتبارسنجی پارامترهای ورودی
-// ====
 $lat = isset($_GET['lat']) ? $_GET['lat'] : null;
 $lon = isset($_GET['lon']) ? $_GET['lon'] : null;
 $city = isset($_GET['city']) ? trim((string)$_GET['city']) : null;
@@ -49,9 +46,8 @@ if ($city !== null) {
     }
 }
 
-// ====
+
 // تابع ترجمه با Geographer (فقط برای فارسی)
-// ====
 function getGeographerCities() {
     // ساخته می شود فقط یک بار در طول اجرای اسکریپت (نه هر بار که تابع صدا زده می شود)
     static $cities = null;
@@ -69,9 +65,25 @@ function containsPersianScript($text) {
     return (bool) preg_match('/[\x{0600}-\x{06FF}]/u', $text);
 }
 
+// نرمال سازی حروف فارسی: خیلی از کیبورد/صفحه کلیدها حروف عربیِ «ي» و «ك» رو تولید می کنن
+// که ظاهرشون با حروف فارسیِ «ی» و «ک» یکیه ولی از نظر کدِ یونیکد کاملا متفاوتن —
+// همین باعث می شه مقایسه ی دقیق رشته ای (مثل جستجو توی دیکشنری) بی صدا شکست بخوره.
+// مثال: «ملایر» با یِ فارسی (U+06CC) با «ملایر» با یِ عربی (U+064A) STRING برابر نیست، با این که عینا یکی به نظر می رسن.
+function normalizePersian($text) {
+    $map = [
+        "\u{064A}" => "\u{06CC}", // ي عربی -> ی فارسی
+        "\u{0643}" => "\u{06A9}", // ك عربی -> ک فارسی
+        "\u{0629}" => "\u{0647}", // ة -> ه
+        "\u{0624}" => "\u{0648}", // ؤ -> و
+        "\u{0626}" => "\u{06CC}", // ئ -> ی
+        "\u{200C}" => ' ',        // نیم فاصله -> فاصله ی معمولی (برای مقایسه ی یکدست)
+    ];
+    return str_replace(array_keys($map), array_values($map), $text);
+}
+
 // دیکشنری مطمئنِ شهرهای معروف ایران (فارسی -> انگلیسی)
 // این ها همیشه از این دیکشنری خونده میشن، نه از API ترجمه ی رایگان — چون اون API (MyMemory)
-// برای اسم های خاص کوتاه گاهی ترجمه ی کاملاً بی ربط برمی گردونه (مثلاً «اراک» -> «Saint Lucia»)
+// برای اسم های خاص کوتاه گاهی ترجمه ی کاملا بی ربط برمی گردونه (مثلا «اراک» -> «Saint Lucia»)
 function getKnownCityTranslation($cityName) {
     static $knownCities = [
         // مراکز استان ها
@@ -131,9 +143,9 @@ function getKnownCityTranslation($cityName) {
         'میناب' => 'Minab', 'جاسک' => 'Jask', 'کیش' => 'Kish', 'قشم' => 'Qeshm',
         'بستک' => 'Bastak', 'خاش' => 'Khash', 'زابل' => 'Zabol',
     ];
-    $normalized = mb_strtolower(trim($cityName));
+    $normalized = mb_strtolower(normalizePersian(trim($cityName)));
     foreach ($knownCities as $fa => $en) {
-        if (mb_strtolower($fa) === $normalized) {
+        if (mb_strtolower(normalizePersian($fa)) === $normalized) {
             return $en;
         }
     }
@@ -167,22 +179,21 @@ function getKnownForeignCityTranslation($cityName) {
         'کپنهاگ' => 'Copenhagen', 'هلسینکی' => 'Helsinki', 'دوبلین' => 'Dublin',
         'لیسبون' => 'Lisbon',
     ];
-    $normalized = mb_strtolower(trim($cityName));
+    $normalized = mb_strtolower(normalizePersian(trim($cityName)));
     foreach ($foreignCities as $fa => $en) {
-        if (mb_strtolower($fa) === $normalized) {
+        if (mb_strtolower(normalizePersian($fa)) === $normalized) {
             return $en;
         }
     }
     return null;
 }
 
-// ====
+
 // حرف به حرف نویسیِ فارسی به لاتین (Transliteration)، نه ترجمه ی معنایی
 // اسم های خاص (مثل اسم شهرها) باید «حرف نویسی» بشن نه «ترجمه»؛ همین اشتباهِ استفاده
 // از یک API ترجمه ی معنایی برای اسم های خاص بود که باعث نتایج بی ربط می شد (مثل «اراک» -> «Saint Lucia»).
 // این روش برای هر اسمی کار می کنه (نه فقط لیست بالا)، ولی چون فارسی مصوت های کوتاه رو نمی نویسه،
-// نتیجه ش تقریبیه، نه همیشه ۱۰۰٪ دقیق.
-// ====
+// نتیجه ش تقریبیه، نه همیشه 100٪ دقیق.
 function transliteratePersian($text) {
     static $map = [
         'آ' => 'A', 'ا' => 'a', 'ب' => 'b', 'پ' => 'p', 'ت' => 't', 'ث' => 's',
@@ -209,10 +220,11 @@ function translateCityWithGeographer($cityName, $lang) {
         return $cityName;
     }
     try {
+        $normalizedInput = normalizePersian($cityName);
         $cities = getGeographerCities();
         foreach ($cities as $city) {
             $localNames = $city->getLocalNames();
-            if (isset($localNames['fa']) && stripos($localNames['fa'], $cityName) !== false) {
+            if (isset($localNames['fa']) && stripos(normalizePersian($localNames['fa']), $normalizedInput) !== false) {
                 return $city->getName();
             }
             if (stripos($city->getName(), $cityName) !== false) {
@@ -225,19 +237,18 @@ function translateCityWithGeographer($cityName, $lang) {
     }
 }
 
-// ====
+
 // تابع ترجمه با MyMemory (رایگان و بدون نیاز به کلید API یا حساب بانکی)
 // نکته: دیگه توی زنجیره ی حل کردن اسم شهر صدا زده نمی شه (چون برای اسم های خاص غیرقابل اعتماد بود،
 // مثل ترجمه ی «اراک» به «Saint Lucia»). به جاش الان transliteratePersian استفاده می شه.
-// این تابع فقط برای استفاده ی احتمالی در آینده (مثلاً ترجمه ی متن های دیگه) نگه داشته شده.
-// ====
+// این تابع فقط برای استفاده ی احتمالی در آینده (مثلا ترجمه ی متن های دیگه) نگه داشته شده.
 function translateWithMyMemory($text, $targetLang = 'en', $sourceLang = 'fa') {
     $params = [
         'q' => $text,
         'langpair' => $sourceLang . '|' . $targetLang,
     ];
     // اختیاری: اگه یک ایمیل توی config.php تعریف کنی (define('MYMEMORY_EMAIL', 'you@example.com');)
-    // سقف رایگان روزانه ۱۰ برابر میشه. کاملاً اختیاریه و بدون اون هم کار می کنه.
+    // سقف رایگان روزانه 10 برابر میشه. کاملا اختیاریه و بدون اون هم کار می کنه.
     if (defined('MYMEMORY_EMAIL') && !empty(MYMEMORY_EMAIL)) {
         $params['de'] = MYMEMORY_EMAIL;
     }
@@ -259,12 +270,11 @@ function translateWithMyMemory($text, $targetLang = 'en', $sourceLang = 'fa') {
     return $text;
 }
 
-// ====
+
 // تابع ترکیبی ترجمه (برای جستجوی اصلی)
-// ترتیب اولویت: ۱) دیکشنری مطمئن  ۲) Geographer (اگه نصب باشه)  ۳) حرف نویسیِ خودمون (برای هر اسمی کار می کنه)
-// این تابع بر اساس خطِ خودِ متن ورودی تصمیم می گیره که ترجمه لازمه یا نه —
+// ترتیب اولویت: 1) دیکشنری مطمئن  2) Geographer (اگه نصب باشه)  3) حرف نویسیِ خودمون (برای هر اسمی کار می کنه)
+// این تابع بر اساس خط خود متن ورودی تصمیم می گیره که ترجمه لازمه یا نه —
 // نه بر اساس $lang (که فقط زبان نمایش رابط کاربریه و ربطی به زبان تایپ شده نداره)
-// ====
 function translateCityName($cityName, $lang) {
     if (!containsPersianScript($cityName)) {
         return $cityName; // متن از قبل لاتینه؛ نیازی به ترجمه نیست
@@ -287,8 +297,8 @@ function translateCityName($cityName, $lang) {
 
     // نه دیکشنری ها نه Geographer چیزی پیدا نکردن.
     // اینجا MyMemory رو امتحان کن — برای اسم های معروف خارجیِ نویسه گردانی شده (مثل نیویورک/برلین)
-    // که با حرف نویسی قابل بازسازی نیستن، MyMemory معمولاً جواب درست می ده چون این جفت اسم ها پرتکرارن.
-    // (برخلاف اسم های کم کاربرد ایرانی که قبلاً باعث جواب غلط MyMemory می شدن — آن ها الان از دیکشنری میان)
+    // که با حرف نویسی قابل بازسازی نیستن، MyMemory معمولا جواب درست می ده چون این جفت اسم ها پرتکرارن.
+    // (برخلاف اسم های کم کاربرد ایرانی که قبلا باعث جواب غلط MyMemory می شدن — آن ها الان از دیکشنری میان)
     $myMemoryResult = translateWithMyMemory($cityName, 'en', 'fa');
     if ($myMemoryResult !== $cityName) {
         return $myMemoryResult;
@@ -298,9 +308,9 @@ function translateCityName($cityName, $lang) {
     return transliteratePersian($cityName);
 }
 
-// ====
+
 // تابع کمکی برای درخواست با cURL
-// ====
+
 function fetchUrl($url) {
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, $url);
@@ -321,13 +331,12 @@ function fetchUrl($url) {
     return ['response' => $response, 'httpCode' => $httpCode, 'error' => $curlError];
 }
 
-// ====
+
 // محدودیت نرخ درخواست ساده (بر اساس IP)
 // جلوگیری از سوءاستفاده/غرق کردن سرور با درخواست های خودکار زیاد
-// ====
 define('RATE_LIMIT_FILE', __DIR__ . '/cache/rate_limit.json');
-define('RATE_LIMIT_MAX_REQUESTS', 30); // حداکثر ۳۰ درخواست
-define('RATE_LIMIT_WINDOW_SECONDS', 10); // در هر ۱۰ ثانیه، به ازای هر IP
+define('RATE_LIMIT_MAX_REQUESTS', 30); // حداکثر 30 درخواست
+define('RATE_LIMIT_WINDOW_SECONDS', 30); // در هر 30 ثانیه، به ازای هر IP
 
 function checkRateLimit() {
     $ip = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
@@ -380,22 +389,20 @@ function checkRateLimit() {
     return $allowed;
 }
 
-// ====
+
 // فرمت دهی مختصات بدون وابستگی به locale سرور
 // (جلوگیری از تبدیل نقطه اعشار به کاما در برخی تنظیمات locale)
-// ====
 function fmtCoord($value) {
     return sprintf('%.6F', (float)$value);
 }
 
-// ====
+
 // کش جستجوی شهر (یک فایل JSON روی سرور)
-// این کش بین همه ی بازدیدکننده ها مشترکه: هر شهر فقط یک بار واقعاً
+// این کش بین همه ی بازدیدکننده ها مشترکه: هر شهر فقط یک بار واقعا
 // جستجو/ترجمه میشه (کار سنگین Geographer + درخواست به API های بیرونی)،
 // و دفعات بعد مستقیم از این فایل خونده میشه.
-// ====
 define('CITY_CACHE_FILE', __DIR__ . '/cache/city_cache.json');
-define('CITY_CACHE_TTL', 60 * 60 * 24 * 30); // ۳۰ روز؛ مختصات شهرها عملاً تغییر نمی کنه
+define('CITY_CACHE_TTL', 60 * 60 * 24 * 30); // 30 روز؛ مختصات شهرها عملا تغییر نمی کنه
 
 function loadCityCache() {
     if (!file_exists(CITY_CACHE_FILE)) {
@@ -440,7 +447,7 @@ function saveCityCache($cache) {
 }
 
 function cityCacheKey($type, $lang, $query) {
-    return $type . ':' . $lang . ':' . mb_strtolower(trim($query));
+    return $type . ':' . $lang . ':' . mb_strtolower(normalizePersian(trim($query)));
 }
 
 function getCityCache($key) {
@@ -457,11 +464,76 @@ function setCityCache($key, $value) {
     saveCityCache($cache);
 }
 
-// ============================================
+
+// ترجمه ی اسم شهر برای *نمایش* به زبان انتخابی کاربر (جدا از ترجمه ی جستجو)
+// اسم پایه ای که از API ها می گیریم معمولا انگلیسیه (مثل Tehran, Paris)،
+// این تابع همون اسم رو برای نمایش به fa/es برمی گردونه (کش می شه تا دوباره API صدا نزنیم)
+
+function translateCityDisplayName($text, $targetLang) {
+    if (empty($text) || $targetLang === 'en') {
+        return $text; // زبان مقصد انگلیسیه؛ معمولا خودِ اسم پایه همینه، نیازی به ترجمه نیست
+    }
+    if ($targetLang === 'fa' && containsPersianScript($text)) {
+        // خودِ WeatherAPI بعضی وقت ها وقتی lang=fa باشه، اسم رو همون جا به فارسی برمی گردونه.
+        // اگه متن از قبل فارسیه، نیازی به ترجمه نیست (و تلاش برای ترجمه ی en->fa روی متنی
+        // که اصلا انگلیسی نیست، فقط باعث تأخیر یا جواب غلط می شه)
+        return $text;
+    }
+
+    $cacheKey = cityCacheKey('display', $targetLang, $text);
+    $cached = getCityCache($cacheKey);
+    if ($cached !== null) {
+        return $cached;
+    }
+
+    $params = ['q' => $text, 'langpair' => 'en|' . $targetLang];
+    if (defined('MYMEMORY_EMAIL') && !empty(MYMEMORY_EMAIL)) {
+        $params['de'] = MYMEMORY_EMAIL;
+    }
+    $url = "https://api.mymemory.translated.net/get?" . http_build_query($params);
+
+    // این فقط یه تزئین نمایشیه (نه داده ی حیاتی)، پس تایم اوتش کوتاه تر از درخواست های اصلیه
+    // تا اگه MyMemory کند بود، کل پاسخ آب وهوا رو بی خودی معطل نکنه
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, $url);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 3);
+    $response = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+
+    if ($httpCode !== 200) {
+        return $text;
+    }
+
+    $data = json_decode($response, true);
+    if (!empty($data['responseData']['translatedText']) && empty($data['quotaFinished'])) {
+        $translated = $data['responseData']['translatedText'];
+        setCityCache($cacheKey, $translated);
+        return $translated;
+    }
+    return $text;
+}
+
+// به یه آرایه ی پاسخِ از قبل دیکد شده، فیلد name_translated رو اضافه می کنه
+// (فقط اگه واقعا با اسم اصلی فرق داشته باشه، تا فرانت مجبور نشه چیز تکراری نشون بده)
+function attachTranslatedLocationName(&$responseArr, $lang) {
+    if (!isset($responseArr['location']['name'])) {
+        return;
+    }
+    $originalName = $responseArr['location']['name'];
+    $translatedName = translateCityDisplayName($originalName, $lang);
+    if ($translatedName !== '' && mb_strtolower($translatedName) !== mb_strtolower($originalName)) {
+        $responseArr['location']['name_translated'] = $translatedName;
+    }
+}
+
 // گرفتن اسم واقعیِ شهر/کشور از روی مختصات (reverse geocoding)
 // این برای وقتیه که مسیر Open-Meteo فعال می شه (چون خودش هیچ اسم شهری برنمی گردونه)
 // نتیجه کش میشه (با تقریب ~1 کیلومتر) تا هر بار درخواست جدید نزنیم
-// ============================================
+
 function reverseGeocode($lat, $lon, $lang = 'en') {
     if (!defined('OPENWEATHER_API_KEY') || empty(OPENWEATHER_API_KEY)) {
         return null;
@@ -493,9 +565,8 @@ function reverseGeocode($lat, $lon, $lang = 'en') {
     return null;
 }
 
-// ====
+
 // تابع جستجوی شهر با OpenWeatherMap (Fallback)
-// ====
 function searchCityWithOpenWeatherMap($cityName) {
     if (!defined('OPENWEATHER_API_KEY') || empty(OPENWEATHER_API_KEY)) {
         return null;
@@ -520,15 +591,14 @@ function searchCityWithOpenWeatherMap($cityName) {
     return null;
 }
 
-// ====
+
 // بخش Suggest (پیشنهادات حین تایپ)
-// ====
 if ($type === 'suggest') {
     // محدودیت نرخ درخواست فقط این جا لازمه، چون این endpoint با هر کاراکتر تایپ شده صدا زده می شه
     // (weather و weekly که فقط با هر بار باز کردن سایت اجرا می شن، نباید محدود بشن)
     if (!checkRateLimit()) {
         http_response_code(429);
-        echo json_encode(['error' => 'تعداد درخواست ها بیش از حد مجازه؛ لطفاً کمی صبر کن']);
+        echo json_encode(['error' => 'تعداد درخواست ها بیش از حد مجازه؛ لطفا کمی صبر کن']);
         exit;
     }
 
@@ -555,7 +625,11 @@ if ($type === 'suggest') {
     $searchQuery = translateCityName($q, $lang);
 
     // اول با WeatherAPI جستجو کن
-    $url = "https://api.weatherapi.com/v1/search.json?key=" . WEATHER_API_KEY . "&q=" . urlencode($searchQuery) . "&lang=" . $lang;
+    // نکته ی مهم: اینجا عمدا از lang=en استفاده می کنیم، نه از $lang انتخابی کاربر —
+    // چون پارامتر lang روی endpoint جستجو، می تونه باعث بشه WeatherAPI برای همون کوئری،
+    // یه مکانِ کاملا متفاوت برگردونه (مقابل دیتابیس محلی سازی شده ی هر زبان match می کنه).
+    // جستجو باید مستقل از زبان نمایش باشه؛ فقط خودِ داده ی آب وهوا باید به زبان کاربر باشه.
+    $url = "https://api.weatherapi.com/v1/search.json?key=" . WEATHER_API_KEY . "&q=" . urlencode($searchQuery) . "&lang=en";
     $result = fetchUrl($url);
     
     if ($result['httpCode'] === 200) {
@@ -590,9 +664,8 @@ if ($type === 'suggest') {
     exit;
 }
 
-// ====
+
 // جستجوی شهر با نام (برای type=weather یا weekly)
-// ====
 if ($city && !$lat && !$lon) {
     // اول از کش JSON چک کن
     $cityCacheKeyStr = cityCacheKey('search', $lang, $city);
@@ -605,8 +678,8 @@ if ($city && !$lat && !$lon) {
         // ترجمه نام شهر (فارسی به انگلیسی) با ترکیب Geographer + Google
         $searchQuery = translateCityName($city, $lang);
         
-        // ۱. اول با WeatherAPI جستجو کن
-        $searchUrl = "https://api.weatherapi.com/v1/search.json?key=" . WEATHER_API_KEY . "&q=" . urlencode($searchQuery) . "&lang=" . $lang;
+        // 1. اول با WeatherAPI جستجو کن (عمدا lang=en — دلیلش بالاتر در تابع suggest توضیح داده شده)
+        $searchUrl = "https://api.weatherapi.com/v1/search.json?key=" . WEATHER_API_KEY . "&q=" . urlencode($searchQuery) . "&lang=en";
         $result = fetchUrl($searchUrl);
         
         if ($result['httpCode'] === 200) {
@@ -617,7 +690,7 @@ if ($city && !$lat && !$lon) {
             }
         }
         
-        // ۲. اگر WeatherAPI پیدا نکرد، از OpenWeatherMap به عنوان Fallback استفاده کن
+        // 2. اگر WeatherAPI پیدا نکرد، از OpenWeatherMap به عنوان Fallback استفاده کن
         if (!$lat || !$lon) {
             $openWeatherResult = searchCityWithOpenWeatherMap($searchQuery);
             if ($openWeatherResult) {
@@ -632,7 +705,7 @@ if ($city && !$lat && !$lon) {
         }
     }
     
-    // ۳. اگر هیچ کدام پیدا نکردند، خطا بده
+    // 3. اگر هیچ کدام پیدا نکردند، خطا بده
     if (!$lat || !$lon) {
         http_response_code(404);
         echo json_encode(['error' => 'شهر پیدا نشد']);
@@ -655,9 +728,9 @@ if ($lat < -90 || $lat > 90 || $lon < -180 || $lon > 180) {
     exit;
 }
 
-// ====
-// بخش ۱: امروز و فردا (WeatherAPI)
-// ====
+
+// امروز و فردا (WeatherAPI)
+
 if ($type === 'weather') {
     $latStr = fmtCoord($lat);
     $lonStr = fmtCoord($lon);
@@ -666,7 +739,13 @@ if ($type === 'weather') {
     $result = fetchUrl($url);
     
     if ($result['httpCode'] === 200) {
-        echo $result['response'];
+        $weatherData = json_decode($result['response'], true);
+        if (is_array($weatherData)) {
+            attachTranslatedLocationName($weatherData, $lang);
+            echo json_encode($weatherData);
+        } else {
+            echo $result['response']; // اگه دیکد نشد (غیرمنتظره)، همون پاسخ خام رو برگردون
+        }
         exit;
     }
 
@@ -685,6 +764,7 @@ if ($type === 'weather') {
         $meteoData = json_decode($meteoResult['response'], true);
         if ($meteoData && isset($meteoData['hourly']) && isset($meteoData['daily'])) {
             $converted = convertOpenMeteoHourlyToWeatherAPI($meteoData, $lat, $lon, $lang);
+            attachTranslatedLocationName($converted, $lang);
             echo json_encode($converted);
             exit;
         }
@@ -699,9 +779,9 @@ if ($type === 'weather') {
     exit;
 }
 
-// ====
-// بخش ۲: هفتگی (Open-Meteo) با Fallback به WeatherAPI
-// ====
+
+// هفتگی (Open-Meteo) با Fallback به WeatherAPI
+
 if ($type === 'weekly') {
     $latStr = fmtCoord($lat);
     $lonStr = fmtCoord($lon);
@@ -711,12 +791,18 @@ if ($type === 'weekly') {
     if ($result['httpCode'] !== 200) {
         error_log("Open-Meteo weekly forecast failed for lat={$latStr}, lon={$lonStr}: httpCode={$result['httpCode']}, curlError=" . ($result['error'] ?: 'none') . ", body=" . substr((string)$result['response'], 0, 300));
 
-        // Fallback به WeatherAPI (فقط ۳ روز - محدودیت پلن رایگان WeatherAPI)
+        // Fallback به WeatherAPI (فقط 3 روز - محدودیت پلن رایگان WeatherAPI)
         $fallbackUrl = "https://api.weatherapi.com/v1/forecast.json?key=" . WEATHER_API_KEY 
                       . "&q={$latStr},{$lonStr}&days=3&lang={$lang}";
         $fallbackResult = fetchUrl($fallbackUrl);
         if ($fallbackResult['httpCode'] === 200) {
-            echo $fallbackResult['response'];
+            $fallbackData = json_decode($fallbackResult['response'], true);
+            if (is_array($fallbackData)) {
+                attachTranslatedLocationName($fallbackData, $lang);
+                echo json_encode($fallbackData);
+            } else {
+                echo $fallbackResult['response'];
+            }
         } else {
             echo json_encode(['error' => 'خطا در دریافت اطلاعات هفتگی']);
         }
@@ -730,13 +816,14 @@ if ($type === 'weekly') {
     }
     
     $converted = convertOpenMeteoToWeatherAPI($data, $lat, $lon, $lang);
+    attachTranslatedLocationName($converted, $lang);
     echo json_encode($converted);
     exit;
 }
 
-// ====
+
 // نگاشت کدهای وضعیت آب وهوای Open-Meteo (استفاده ی مشترک برای هفتگی و امروز/فردا)
-// ====
+
 function getOpenMeteoCondition($code) {
     $map = [
         0 => 'Clear', 1 => 'Clear', 2 => 'Partly cloudy', 3 => 'Overcast',
@@ -771,10 +858,10 @@ function getOpenMeteoEmoji($code) {
     return $map[$code] ?? '🌤️';
 }
 
-// ====
+
 // تابع تبدیل Open-Meteo (روزانه، برای پیش بینی هفتگی) به فرمت WeatherAPI
-// ====
-// نزدیک ترین ساعتِ موجود به یک ساعتِ هدف رو پیدا می کنه (مثلاً نزدیک ترین به ۱۳ برای «روز»)
+
+// نزدیک ترین ساعتِ موجود به یک ساعتِ هدف رو پیدا می کنه (مثلا نزدیک ترین به 13 برای «روز»)
 function findClosestHourCode($hoursMap, $targetHour) {
     if (empty($hoursMap)) {
         return null;
@@ -796,7 +883,7 @@ function convertOpenMeteoToWeatherAPI($data, $lat, $lon, $lang) {
     $forecastDays = [];
 
     // اگه داده ی ساعتی موجود باشه، کد وضعیت رو برای هر روز به تفکیک ساعت گروه بندی کن
-    // تا بشه یه کد «نماینده ی روز» (مثلاً ساعت ۱۳) و یه کد «نماینده ی شب» (مثلاً ساعت ۰) جدا از هم پیدا کرد
+    // تا بشه یه کد «نماینده ی روز» (مثلا ساعت 13) و یه کد «نماینده ی شب» (مثلا ساعت 0) جدا از هم پیدا کرد
     $hourlyByDate = [];
     if (isset($data['hourly']['time']) && isset($data['hourly']['weather_code'])) {
         foreach ($data['hourly']['time'] as $i => $isoTime) {
@@ -850,7 +937,7 @@ function convertOpenMeteoToWeatherAPI($data, $lat, $lon, $lang) {
             'lat' => $lat,
             'lon' => $lon,
             'localtime' => date('Y-m-d H:i'),
-            'tz_id' => $data['timezone'] ?? 'UTC', // Open-Meteo با timezone=auto واقعاً این رو برمی گردونه
+            'tz_id' => $data['timezone'] ?? 'UTC', // Open-Meteo با timezone=auto واقعا این رو برمی گردونه
         ],
         'current' => [
             'temp_c' => $daily['temperature_2m_max'][0] ?? 20,
@@ -868,11 +955,11 @@ function convertOpenMeteoToWeatherAPI($data, $lat, $lon, $lang) {
     ];
 }
 
-// ====
+
 // تابع تبدیل Open-Meteo (ساعتی، برای امروز/فردا) به فرمت WeatherAPI
 // برخلاف تابع بالا، این یکی آرایه ی hour رو هم برای هر روز می سازه
 // (چون بخش «امروز»/«فردا» توی رابط کاربری به صورت ساعتی نمایش داده میشه)
-// ====
+
 function convertOpenMeteoHourlyToWeatherAPI($data, $lat, $lon, $lang) {
     $hourly = $data['hourly'];
     $daily = $data['daily'];
